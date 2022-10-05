@@ -80,7 +80,8 @@ class Clustering:
         self.colors_ = cycle(colors.cnames.keys())
         self.n_clusters = 5
         self.visualize = visualize
-
+    
+    # SOURCE: https://scikit-learn.org/stable/auto_examples/cluster/plot_dbscan.html
     def dbscan(self, eps=1, min_samples=16, filename="dbscan.png"):
         db = DBSCAN(eps=eps, min_samples=min_samples)
         db.fit(self.new_features)
