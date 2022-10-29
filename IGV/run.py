@@ -8,6 +8,7 @@ import logging
 import argparse
 import os.path as osp
 import numpy as np
+from tqdm import tqdm
 
 
 parser = argparse.ArgumentParser(description="GCN train parameter")
@@ -33,11 +34,12 @@ parser.add_argument('-app_feat', default='res152', choices=['resnet', 'res152'],
 parser.add_argument('-mot_feat', default='resnext', choices=['resnext', '3dres152'], type=str)
 
 # New Args
-parser.add_argument("-rank", type=int, help="DDP Rank", default=0)
-parser.add_argument("-ddp", type=bool, help="DDP", default=False)
-parser.add_argument("-init_weights", type=str, default="/home/adithyas/IGV/weights/hga_model.ckpt", help="HGA init weights")
-parser.add_argument("-sample_list_path", type=str, default='/home/adithyas/NExT-QA/dataset/nextqa', help="NExT-QA dataset CSV path")
-parser.add_argument("-video_feature_path", type=str, default='/home/adithyas/NExT-QA/data/feats', help="Video and Text features path")
+parser.add_argument("--local_rank", type=int, help="DDP Rank", default=0)
+parser.add_argument("-ddp", help="DDP", action='store_true')
+parser.add_argument("-init_weights", type=str, default="./weights/hga_model.ckpt", help="HGA init weights")
+parser.add_argument("-sample_list_path", type=str, default='../next-dataset', help="NExT-QA dataset CSV path")
+parser.add_argument("-video_feature_path", type=str, default='./feats', help="Video and Text features path")
+parser.add_argument("-num_workers", type=int, default=8, help="Number of workers")
 
 args = parser.parse_args()
 set_gpu_devices(args.gpu)
@@ -92,7 +94,7 @@ def train(model,  optimizer, train_loader, ce, kl_mb, kl_b, device):
     epoch_klb_loss = 0.0
     prediction_list = []
     answer_list = []
-    for iter, inputs in enumerate(train_loader):
+    for iter, inputs in enumerate(tqdm(train_loader)):
         videos, qas, qas_lengths, answers, qns_id, vid_idx = inputs
         video_inputs = videos.to(device)
         qas_inputs = qas.to(device)
@@ -149,8 +151,7 @@ if __name__ == "__main__":
 
     logger, sign = logger(args)
 
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu", args.local_rank)
     sample_list_path = args.sample_list_path # '/home/adithyas/NExT-QA/dataset/nextqa'
     video_feature_path = args.video_feature_path # '/home/adithyas/NExT-QA/data/feats'
 
@@ -160,9 +161,9 @@ if __name__ == "__main__":
 
     # train_sampler, val_sampler, test_sampler = SequentialSampler(train_dataset), SequentialSampler(val_dataset), SequentialSampler(test_dataset)
     
-    train_loader = DataLoader(dataset=train_dataset, batch_size=args.bs, shuffle=True, num_workers=8, pin_memory=True)
-    val_loader = DataLoader(dataset=val_dataset, batch_size=args.bs, shuffle=False, num_workers=8, pin_memory=True)
-    test_loader = DataLoader(dataset=test_dataset, batch_size=args.bs, shuffle=False, num_workers=8, pin_memory=True)
+    train_loader = DataLoader(dataset=train_dataset, batch_size=args.bs, shuffle=True, num_workers=args.num_workers, pin_memory=True)
+    val_loader = DataLoader(dataset=val_dataset, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
+    test_loader = DataLoader(dataset=test_dataset, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # hyper setting
     lr_rate = args.lr
@@ -172,7 +173,7 @@ if __name__ == "__main__":
         world_size = torch.distributed.get_world_size()
         torch.cuda.set_device(args.local_rank)
         args.world_size = world_size
-        setup(args.local_rank, world_size)
+        # setup(args.local_rank, world_size)
     
     mem_bank = torch.FloatTensor(train_dataset.all_feats) # torch.cat((torch.Tensor(train_dataset.app), torch.Tensor(train_dataset.mot)), dim=-1)
     model = HGA(args.ans_num, args.hd,  args.wd, args.drop, args.tau, args.ln ,memory=mem_bank)
