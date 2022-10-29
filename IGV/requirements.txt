@@ -12,7 +12,7 @@ decorator==4.4.2
 entrypoints==0.3
 filelock==3.3.1
 future==0.18.2
-# h5py==2.7.1
+h5py==2.7.1
 huggingface-hub==0.0.19
 idna==2.10
 imageio==2.9.0
