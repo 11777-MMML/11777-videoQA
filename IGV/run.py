@@ -177,7 +177,7 @@ if __name__ == "__main__":
     
     mem_bank = torch.FloatTensor(train_dataset.all_feats) # torch.cat((torch.Tensor(train_dataset.app), torch.Tensor(train_dataset.mot)), dim=-1)
     model = HGA(args.ans_num, args.hd,  args.wd, args.drop, args.tau, args.ln ,memory=mem_bank)
-    model.load_state_dict(torch.load(args.init_weights))
+    # model.load_state_dict(torch.load(args.init_weights))
     optimizer = torch.optim.Adam(params = [{'params':model.parameters()}], lr=lr_rate)
     scheduler = ReduceLROnPlateau(optimizer, 'max', factor=0.5, patience=args.pa, verbose=True)
     
@@ -215,5 +215,5 @@ if __name__ == "__main__":
     test_acc=eval(model, test_loader, device)
     logger.debug("Test acc{:.2f} on {} epoch".format(test_acc, best_epoch))
     
-    cleanup()
+    # cleanup()
 
