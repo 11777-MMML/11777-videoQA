@@ -1,0 +1,39 @@
+pip install gdown
+gdown --folder https://drive.google.com/drive/folders/1gKRR2es8-gRTyP25CvrrVtV6aN5UxttF
+gdown <ckpt> file
+
+pytorch 1.11.0
+
+packages:
+pip install block==0.0.5
+pip install block.bootstrap.pytorch==0.1.6
+pip install nltk
+pip install h5py
+<no other issues should come up, just install the package if it throws an error>
+
+structure in /home/ec2-user
+
+│
+├── feats
+│   ├── qas_bert
+│   │   ├── bert_ft_test.h5
+│   │   ├── bert_ft_train.h5
+│   │   └── bert_ft_val.h5
+│   └── vid_feat
+│       ├── app_mot_test.h5
+│       ├── app_mot_train.h5
+│       └── app_mot_val.h5
+├── nextqa
+│   ├── glove_embed.npy
+│   ├── test.csv
+│   ├── train.csv
+│   ├── val.csv
+│   └── vocab.pkl
+├── NExT-QA
+│   └── map_vid_vidorID.json
+├── test-data-nextqa
+│   └── README.txt
+├── test-data-nextqa.zip
+
+
+python train.py -v 0.1 -gpu 0 -num_workers 4 -epoch 80
