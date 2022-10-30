@@ -78,7 +78,7 @@ class VideoQADataset(Dataset):
         # get video idx in vid_feat.h5
         vid_idx=self.vid2idx[video_name]
 
-        return video_feature, candidate_qas, qa_lengths, ans, int(qid), vid_idx
+        return video_feature, candidate_qas, qa_lengths, ans, qns_key, vid_idx
 
 if __name__ == "__main__":
 
