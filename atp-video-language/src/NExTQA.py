@@ -3,6 +3,7 @@ import h5py
 import pandas as pd
 import torch
 from torch.utils import data
+from transformers import CLIPTokenizer, CLIPTextModel
 
 class NExTQADataset(data.Dataset):
     '''
@@ -78,3 +79,98 @@ class NExTQADataset(data.Dataset):
         label = example['answer']
 
         return sampled_video_feature, frame_indices, f'{video_id}_{quest_id}', text_feature, label
+
+class NextQADatasetCLIP(data.Dataset):
+    '''
+    NExT Dataset based on the example provided in `data.py` within ATP
+    '''
+    def __init__(self, args, split='train', **kwargs):
+        super().__init__()
+        
+        # Define root folder locations
+        self.split = split
+        self.video_features_path = args.video_features_path
+        self.text_features_path = args.text_features_path
+        self.csv_dataset_path = args.csv_dataset_path
+        self.clip_frames = args.clip_frames
+        self.video_features_path = os.path.join(self.video_features_path, f'clip_{self.clip_frames}_feats')
+        self.num_classes = 5
+        self.magic = 786
+        self.clip_model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
+        self.clip_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
+
+        # ATP Specific parameters
+        self.n_frames = args.n_frames
+
+        # Define file locations
+        self.csv_file = os.path.join(self.csv_dataset_path, f'{self.split}.csv')
+        self.video_features_file = os.path.join(self.video_features_path, f'{self.split}_{self.clip_frames}_clip.h5')
+
+        # open files
+        self.csv = pd.read_csv(self.csv_file)
+        video_features = h5py.File(self.video_features_file)
+
+        # Create map between video id to features
+        video_id = video_features['ids']
+        features = video_features['feat']
+        self.video_to_feature = {}
+
+        # Taken from EIGV data loader
+        for id, feature in zip(video_id, features):
+            self.video_to_feature[id] = feature    
+
+    def _create_one_hot(self, num_classes, target_class):
+        val = torch.zeros(num_classes, dtype=torch.long)
+        val[target_class] = 1
+        return val
+    
+    def __len__(self):
+        return len(self.csv)
+    
+    def __getitem__(self, index):
+        example = self.csv.iloc[index]
+
+        video_id = example['video']
+        question = example['question']
+        a0 = example['a0']
+        a1 = example['a1']
+        a2 = example['a2']
+        a3 = example['a3']
+        a4 = example['a4']
+
+        video_feature = self.video_to_feature[video_id]
+
+        question_inputs = self.clip_tokenizer(question, return_tensor='pt')
+        question_feature = self.clip_model(**question_inputs)
+        
+        a0_inputs = self.clip_tokenizer(a0, return_tensor='pt')
+        a0_feature = self.clip_model(**a0_inputs)
+
+        a1_inputs = self.clip_tokenizer(a1, return_tensor='pt')
+        a1_feature = self.clip_model(**a1_inputs)
+
+        a2_inputs = self.clip_tokenizer(a2, return_tensor='pt')
+        a2_feature = self.clip_model(**a2_inputs)
+
+        a3_inputs = self.clip_tokenizer(a3, return_tensor='pt')
+        a3_feature = self.clip_model(**a3_inputs)
+
+        a4_inputs = self.clip_tokenizer(a4, return_tensor='pt')
+        a4_feature = self.clip_model(**a4_inputs)
+
+        # Preprocess video_features
+        # 16 x 4096
+        video_feature = torch.tensor(video_feature)
+
+        # Get a random permutation of the original frames
+        frame_indices = torch.randperm(len(video_feature))[:self.n_frames]
+        sampled_video_feature = video_feature[frame_indices]
+
+        # Take only the CLS token
+        txt_query = question_feature[0]
+        txt_cands = (a0_feature[0], a1_feature[0], a2_feature[0], a3_feature[0], a4_feature[0])
+
+        # Get the label
+        label = example['answer']
+
+        return sampled_video_feature, frame_indices, txt_query, txt_cands, label
