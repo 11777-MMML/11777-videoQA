@@ -96,8 +96,9 @@ class NextQADatasetCLIP(data.Dataset):
         self.video_features_path = os.path.join(self.video_features_path, f'clip_{self.clip_frames}_feats')
         self.num_classes = 5
         self.magic = 786
-        self.clip_model = CLIPTextModel.from_pretrained("openai/clip-vit-base-patch32")
-        self.clip_tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-base-patch32")
+
+        self.text_features_file = os.path.join(self.text_features_path, f'bert_ft_{self.split}.h5')
+        self.text_features = h5py.File(self.text_features_file)['feat']
 
         # ATP Specific parameters
         self.n_frames = args.n_frames
@@ -112,7 +113,7 @@ class NextQADatasetCLIP(data.Dataset):
 
         # Create map between video id to features
         video_id = video_features['ids']
-        features = video_features['feat']
+        features = video_features['feats']
         self.video_to_feature = {}
 
         # Taken from EIGV data loader
@@ -140,37 +141,23 @@ class NextQADatasetCLIP(data.Dataset):
 
         video_feature = self.video_to_feature[video_id]
 
-        question_inputs = self.clip_tokenizer(question, return_tensor='pt')
-        question_feature = self.clip_model(**question_inputs)
-        
-        a0_inputs = self.clip_tokenizer(a0, return_tensor='pt')
-        a0_feature = self.clip_model(**a0_inputs)
-
-        a1_inputs = self.clip_tokenizer(a1, return_tensor='pt')
-        a1_feature = self.clip_model(**a1_inputs)
-
-        a2_inputs = self.clip_tokenizer(a2, return_tensor='pt')
-        a2_feature = self.clip_model(**a2_inputs)
-
-        a3_inputs = self.clip_tokenizer(a3, return_tensor='pt')
-        a3_feature = self.clip_model(**a3_inputs)
-
-        a4_inputs = self.clip_tokenizer(a4, return_tensor='pt')
-        a4_feature = self.clip_model(**a4_inputs)
-
         # Preprocess video_features
         # 16 x 4096
-        video_feature = torch.tensor(video_feature)
+        video_feature = torch.tensor(video_feature, requires_grad=False)
 
         # Get a random permutation of the original frames
         frame_indices = torch.randperm(len(video_feature))[:self.n_frames]
         sampled_video_feature = video_feature[frame_indices]
 
-        # Take only the CLS token
-        txt_query = question_feature[0]
-        txt_cands = (a0_feature[0], a1_feature[0], a2_feature[0], a3_feature[0], a4_feature[0])
-
         # Get the label
-        label = example['answer']
+        text_feature = self.text_features[index]
+        text_feature = torch.tensor(text_feature)
 
-        return sampled_video_feature, frame_indices, txt_query, txt_cands, label
+        # Take only the CLS token
+        text_feature = text_feature[:, 0]
+
+        label = example['answer']
+        q = question
+        ans = {"a0": q + "? " + a0, "a1": q + "? " +a1, "a2": q + "? " +a2, "a3": q + "? " +a3, "a4": q + "? " +a4}
+
+        return sampled_video_feature, frame_indices, q, ans, label

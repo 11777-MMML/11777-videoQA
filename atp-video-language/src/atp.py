@@ -17,10 +17,10 @@ class ATPConfig:
     ATPConfig contains the parameters needed for the ATPSelectorModel (and its ATPEncoder).
     '''
     # ATPEncoder params
-    n_layers: int = 2
+    n_layers: int = 3
     n_heads: int = 2
-    d_model: int = 128
-    d_model_ff: int = 128
+    d_model: int = 256
+    d_model_ff: int = 256
     enc_dropout: float = 0.1
     use_text_query: bool = False  # at least one use_text_* needs to be true for ATP to be multimodal
     use_text_cands: bool = False  # ^ see above. (note: if both are false, ATP is vision-only)
@@ -105,10 +105,10 @@ class ATPSelectorModel(nn.Module):
         self.dropout = nn.Dropout(p=config.sel_dropout)
         self.logits = nn.Linear(config.d_model, 1)
 
-        self.VIDEO_DIM = 4096
+        self.VIDEO_DIM = 768
         self.TEXT_DIM = 768
-        self.video_proj = nn.Linear(in_features=self.VIDEO_DIM, out_features=self.config.d_input, bias=True)
-        self.text_proj = nn.Linear(in_features=self.TEXT_DIM, out_features=config.d_input, bias=True)
+        self.video_proj = nn.Linear(in_features=self.VIDEO_DIM, out_features=self.config.d_input, bias=False)
+        self.text_proj = nn.Linear(in_features=self.TEXT_DIM, out_features=config.d_input, bias=False)
 
     def forward(self,
                 x_vis_seq: torch.tensor,
