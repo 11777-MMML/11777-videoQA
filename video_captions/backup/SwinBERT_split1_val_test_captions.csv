@@ -1,0 +1,614 @@
+,vid_num,SwinBERT Captions,SwinBERT Confidence Scores
+0,6977613963,a football player runs and catches a football and then runs to the ground.,0.3672583997249603
+1,4367056464,a little girl is playing with a man and she is dancing.,0.35142430663108826
+2,3261079025,a man is flying a kite in the snow while a man watches.,0.5192683935165405
+3,10597533885,a little girl is playing with a toy and then she picks up a box.,0.3804924190044403
+4,3107742409,a man is holding a baby and the baby is shaking his head.,0.46403878927230835
+5,7536230796,a young boy is playing with his train set and then he walks away.,0.3588789999485016
+6,3060478605,a woman is riding a horse in a wooded area.,0.5771190524101257
+7,6297019062,three babies are sitting in a toy car and they are sitting in a chair.,0.3591374456882477
+8,2824317018,a group of people are sitting on the ground and a little girl is picking up a tree,0.3372056186199188
+9,5608194207,a man and a woman are dancing and drinking wine.,0.35410717129707336
+10,2573424030,a group of people are walking with a dog in a wheelchair.,0.506777286529541
+11,4244817395,a little boy is helping his mother put water into his cup.,0.4105408787727356
+12,4264435046,a woman is walking a dog on a leash down a road.,0.5129579305648804
+13,7786283208,a little girl is rolling on the floor and a man is talking to her.,0.41874635219573975
+14,3942617402,a man is shown using a train to extinguisher on a train track.,0.35258057713508606
+15,4759861822,a man hits a golf ball with a golf club and then hits the ball.,0.4923693537712097
+16,3708066257,a man and a woman are dancing in a living room.,0.6020306348800659
+17,5561024834,a young boy is jumping on a bed and doing a somersault.,0.5437605381011963
+18,5561813550,a baby is dancing to music and then stops and walks away.,0.3494461476802826
+19,3361148739,a group of people are walking around a large snowy area.,0.4081784188747406
+20,13884293626,a man is standing at a desk and then he walks up to the desk and starts to,0.31083938479423523
+21,3453095532,a woman is holding a baby and the baby is smiling.,0.5479570627212524
+22,4782722858,a group of people are on stage playing instruments and singing.,0.47517022490501404
+23,4612723694,a man is holding a snake and then picks it up and then picks it up.,0.4153537154197693
+24,12231797435,a group of people are on a boat and one of them is picking up a fish.,0.4917009174823761
+25,4882414082,a baby is sitting in a high chair and eating spaghetti with his hands.,0.6279469132423401
+26,4516967897,two women are standing on a balcony and one woman is standing next to the other.,0.4117249846458435
+27,8841986583,a little boy is hanging from a swing and is trying to hang on a swing.,0.31481489539146423
+28,6988748711,a group of people are digging in a large pile of dirt.,0.43969109654426575
+29,5296635780,a man and a woman are talking and one of them is putting a bouquet of flowers in,0.3582095503807068
+30,5877508141,a little boy is climbing up a slide on a playground.,0.4457082152366638
+31,9315142743,a man is riding a horse and playing polo with a stick.,0.48107805848121643
+32,4970148391,a man is hitting a baseball with a baseball bat.,0.6249035596847534
+33,2830899473,a group of people are walking down a street with a backpack on their back.,0.43732255697250366
+34,7492398760,a man runs across a lawn and a little girl runs and kicks a ball.,0.30699992179870605
+35,5586394125,a dog is being walked to a woman and a dog is running around.,0.28598737716674805
+36,4859374761,a girl is climbing a rope and then jumps off the top of the rope.,0.3610830307006836
+37,5702201498,a woman is sitting on a couch and holding a cat on her lap and the cat is,0.37863022089004517
+38,2436907807,a baby is sitting on the floor and playing with a toy and then he picks up a,0.3993774652481079
+39,9873067604,a group of kids are sitting in a car and talking to each other.,0.49802082777023315
+40,10309542255,two bulls are in a park and are playing with each other.,0.35317671298980713
+41,4024008346,a young boy is playing with a balloon and a woman is talking to him.,0.41584110260009766
+42,6244382586,a group of people are riding horses in a large arena.,0.5041089653968811
+43,11849091804,a young boy is opening a present and talking to someone.,0.42007365822792053
+44,9256409422,a woman is talking on a cell phone and then she is talking to someone.,0.35516539216041565
+45,8575881495,a little girl is sitting in a chair and is crying and then she starts to cry.,0.38505861163139343
+46,8241491518,a man is using a tool to dig through a small tree.,0.36015188694000244
+47,3741143820,a man is standing on stage and talking to a group of people.,0.4174322485923767
+48,7988210561,a baby is sitting in a chair and playing with a man.,0.4096534550189972
+49,5008618500,a woman is laying on a bed with a baby and the baby is trying to wake the,0.46699801087379456
+50,8252088130,a woman is holding a bird and feeding it to a man.,0.42009350657463074
+51,3175315183,a baby is lying on a bouncy mat and is crying.,0.4489031136035919
+52,5071764918,a woman is playing the piano and singing along to a song.,0.4709320366382599
+53,2716277960,a group of people are riding bikes through a forest.,0.46536076068878174
+54,13569831214,a person is skiing down a hill and then they go down a hill.,0.38009950518608093
+55,5854324479,a man is standing in front of a group of people and talking.,0.5229524970054626
+56,3784543730,a person is riding a bike down a road and then stops.,0.3600699305534363
+57,5427285434,a little boy is dancing to music and then he picks up a toy.,0.3183211088180542
+58,9528990839,a man is driving a car while another man is sitting in the back seat of the car,0.38926854729652405
+59,5076016564,a man is standing in front of a camera and he is fixing a shirt.,0.40335166454315186
+60,6623049121,a woman is reading a book while a group of people are watching.,0.37237343192100525
+61,11565498775,a man is showing a young boy how to use a wheelbarrow.,0.5017297863960266
+62,3974684583,a man is walking around a large object that is in a warehouse.,0.39428815245628357
+63,13296054183,a group of people are riding bicycles down a street.,0.5097183585166931
+64,3603906729,a person is feeding a bunch of small chicks and the baby is laying on a bed.,0.35718008875846863
+65,5521781780,a group of people are walking around a large outdoor area and looking at a wall.,0.3432806432247162
+66,7059877301,a dog is standing in a tub and a person is standing in a tub.,0.3625437915325165
+67,4190655097,a cat is being petted by a person and then the cat jumps up and pets the,0.429181843996048
+68,14003541505,a baby is crawling on the floor and a woman is playing with her.,0.482047975063324
+69,7651639778,a group of men are trying to climb up a large piece of ice.,0.40745267271995544
+70,8183771503,a baby is sitting at a computer and playing with a remote control.,0.49625328183174133
+71,5913180144,a group of people are on a stage and they are acting out a play.,0.5268043279647827
+72,5026660202,a group of people are playing instruments on a stage.,0.5443678498268127
+73,13919236672,a little girl is walking around a room and playing with a toy car.,0.46290892362594604
+74,6704169045,a cat is walking on a treadmill and then a cat is running on the floor.,0.3672804534435272
+75,3159511588,two people are scuba diving in the water and one of them is swimming.,0.3805381953716278
+76,9366196411,a person is driving a boat that is floating in the water.,0.38938525319099426
+77,2547885226,a young boy is playing with a toy and putting it on his foot.,0.4302041828632355
+78,2712662377,a person is showing a small animal that is outside in the grass.,0.3678794801235199
+79,6896884547,a little girl is sitting on a bed and playing with a ball.,0.5096216201782227
+80,3273524169,a woman is playing guitar and singing while a man plays a guitar.,0.5153665542602539
+81,7769523956,a person is using a remote to control a small circuit.,0.37373587489128113
+82,5348508732,a boy and a girl are sitting in the snow and petting a dog.,0.5014931559562683
+83,4774302357,two men are sitting in a room and playing a stringed instrument.,0.4577815532684326
+84,4467119650,a baby is being washed in a sink by a woman.,0.4881729185581207
+85,2771402761,a woman is swimming in a pool with a child.,0.45959538221359253
+86,2736413196,a man is sitting at a table and talking to a woman while she is drinking a beverage,0.33469143509864807
+87,4103088549,a surfers ride the waves on a wave and then ride the waves.,0.3075617551803589
+88,9439876127,a football player tackles another player and then tackles the ball.,0.3392340838909149
+89,5144114810,a dog is walking around with a stick and then a person is eating food.,0.24091696739196777
+90,8455160795,a group of people are on the beach and are shoveling for something in the water.,0.436533659696579
+91,2793260225,a group of people are in the water and one of them jumps into the water.,0.5050008296966553
+92,5539388348,a woman is interviewing a man and then a woman in a costume.,0.3276207447052002
+93,4983922034,a man is running and chasing a man in the snow.,0.41580694913864136
+94,3131380536,a little boy is sitting in a high chair eating ice cream and then he takes a bite,0.44386863708496094
+95,4443526735,a baby is swinging in a swing and swinging back and forth.,0.5486985445022583
+96,4485498145,a group of people are sitting at a table and drinking a drink.,0.3918742537498474
+97,4626085492,a dog is walking around a bed and a person is talking to them.,0.36008474230766296
+98,5987365500,a little girl is drinking from a bottle and then she starts to drink from it.,0.4182925820350647
+99,3322503255,a man is driving a car and a man is talking about it.,0.3180754482746124
+100,6827489358,a little boy is playing the drums and cymbals with a stick.,0.5035858750343323
+101,4564478328,a group of people are running around in a field.,0.4340864419937134
+102,2717347132,a baby is sitting on a woman's lap and is trying to get him to move,0.4435189366340637
+103,3145698830,a little boy is opening a present while a man is talking to him.,0.4619111120700836
+104,3939145327,a little girl is riding a tricycle with training wheels on it.,0.5401603579521179
+105,4765564263,a group of kids are playing in a yard and one of them is jumping on a slip,0.33292463421821594
+106,3489439407,a group of people are in a studio and they are playing a game of scrabble,0.5398232936859131
+107,4007070030,two people are fencing in a gym while others watch.,0.4745219945907593
+108,2978295992,a woman is carving a pumpkin with a knife while a man is talking to her.,0.4762115478515625
+109,5926256714,a baby is being held up by a man and is waving his arms.,0.38164862990379333
+110,5658916668,a person is sliding down a hill on a sled and then falls off.,0.4462882876396179
+111,4146348376,a man and woman are sitting at a table and eating food.,0.41214144229888916
+112,8313365386,a woman is showing a little girl how to use a scrapbook.,0.5177243947982788
+113,6096998186,a woman is holding a box and then she takes a bite out of it.,0.3701818287372589
+114,4859057828,a group of people are outside and they are talking and talking.,0.4281952679157257
+115,2495861393,a group of kids are at a table eating and eating food.,0.38001400232315063
+116,4635309062,a man is cooking meat in a pan and then he is cooking.,0.32872438430786133
+117,2702259291,a baby is laying on its back and sneezes and then sneezes.,0.5047308802604675
+118,9473479950,a baby is laying on a bed and laughing while a woman is talking to her.,0.48639118671417236
+119,4889681401,a group of people are riding bikes down a road.,0.4896029829978943
+120,3192668394,a man is sitting on a couch and drinking a beverage.,0.39229512214660645
+121,9576671750,a person is holding a phone and showing how to use it.,0.4442344307899475
+122,4307845190,a band is playing on stage while a band plays the guitar.,0.3853739798069
+123,2492379382,a group of people are riding on motorcycles and one of them is wearing a helmet.,0.36991339921951294
+124,4132599924,a man is playing music on a stage with a light up screen.,0.3448316752910614
+125,8563398032,a man is speaking to a group of people sitting at a table.,0.48678675293922424
+126,8505893258,a group of young girls are standing in a circle and they are talking to each other.,0.4274565279483795
+127,8990144134,a cat is laying on a table and a person is petting it.,0.4934713840484619
+128,5667931404,a toddler is playing with a toy train set.,0.5296266674995422
+129,10437466795,two little girls are standing in front of a couch and they are making funny faces.,0.4751648008823395
+130,11670386946,a man is looking at a car and then he is shown taking a picture of a vehicle,0.253691166639328
+131,7508439506,a baby is laying on a bed and laughing while a man is tickling him.,0.46931955218315125
+132,7114553643,a man is on stage performing a dance routine while a band plays behind him.,0.376434862613678
+133,9577637819,a girl is sitting in a chair and she is talking on a phone.,0.41719478368759155
+134,4410839941,a man is teaching a little boy how to play hockey.,0.6038759350776672
+135,8171216955,two little girls are playing a game of monopoly and the girl is laughing.,0.39253365993499756
+136,3388598772,a man and a woman are in a bar and they are kissing.,0.4772558808326721
+137,11503803033,a group of people are skiing down a mountain while music is playing.,0.5517897009849548
+138,2414559210,two men are paddling in a kayak and then they fall over.,0.3800259232521057
+139,2741077942,a group of people are in a room and one of them is trying to get something out,0.4493738114833832
+140,6592821115,a woman is sitting on a couch with two young children and they hug each other.,0.445648193359375
+141,6898821807,two young boys are playing with each other and laughing.,0.4759655296802521
+142,3164519967,a woman is holding a baby and the baby is talking to it.,0.4525841176509857
+143,3285219159,a baby is sitting in a high chair and being fed by a person.,0.5806576609611511
+144,4164211316,a group of kids are playing a game on a track.,0.4297465682029724
+145,4698622422,a young boy is playing with a ball and then he picks it up and throws it to,0.40479156374931335
+146,5145526755,a bear is laying on the grass and a man is petting it.,0.4430570900440216
+147,3206694342,a group of children are on a stage dancing and dancing to music.,0.4998948276042938
+148,5349766264,a group of men are sitting around a table and one of them is playing a guitar.,0.47489577531814575
+149,12392885583,a baby is crawling on a bed and then falls over.,0.4649709463119507
+150,5205081904,a little boy is sitting on the floor trying to put his shoe on his foot.,0.5392979383468628
+151,6628116705,a little boy is riding a scooter down the sidewalk while a man is talking to,0.485253244638443
+152,6806999702,a little girl is playing with a ball and a dog is running around.,0.3790711462497711
+153,2984974097,a little girl is riding her bike down the street.,0.5692440867424011
+154,5328004991,a woman and a boy are standing at a counter and mixing something in a bowl.,0.4734032154083252
+155,3105728894,a group of people are on a stage and they are playing with a toy.,0.4496465027332306
+156,4626535366,a group of kids are standing in a buckets and they are standing in buckets.,0.46044018864631653
+157,7149153537,a man is holding a baby and the baby is jumping in the pool.,0.4376852512359619
+158,3526597179,a group of people are walking around in a hallway and a woman is walking through a hallway,0.41760918498039246
+159,5750174853,a person is feeding a bunch of birds that are on the ground.,0.43613144755363464
+160,6836443264,a man is sitting on a chair and singing while others are sitting around him.,0.4301401972770691
+161,5726814495,a bird is sitting on a tree and a man is talking to a bird.,0.34755706787109375
+162,3049351381,a baby is laying on a couch and yawning and then yawns.,0.5232251286506653
+163,11276567104,a priest is washing the feet of a woman in a church.,0.4431702196598053
+164,3786734055,a woman rides a mechanical bull in a bouncy house.,0.5913525223731995
+165,4485707628,a dog is running around and a person is running around with a dog.,0.3094194531440735
+166,6691330381,a man is tickling a young child's feet and the child is laughing.,0.5101866722106934
+167,4967810888,a woman is standing in front of a group of people and they are clapping.,0.4518876075744629
+168,9218760111,a man and a woman are standing on the sidewalk and they are dancing.,0.427877277135849
+169,5294393178,a person is driving a car in the snow and is covered in snow.,0.4083353281021118
+170,3763643225,a little boy is playing with a toy and then he picks up a toy.,0.3492564558982849
+171,2821788355,a man is water skiing behind a boat on a lake.,0.6306918859481812
+172,5804131706,a group of people are singing and dancing while a band plays the guitar.,0.4949415326118469
+173,4658396458,a baby is sitting in a baby walker and shaking his head no.,0.4845108389854431
+174,8604794910,a young boy and a girl are playing tennis on a court.,0.464463472366333
+175,8495272210,a person is skiing down a hill and then stops to the camera.,0.357694149017334
+176,7887764754,a little girl is sitting on a chair and a dog is sitting on a chair.,0.4656917154788971
+177,2968783285,a baby is walking around in a living room and then he walks away.,0.3890534043312073
+178,5557327801,a person is driving a car on a dirt road.,0.5125407576560974
+179,2514367185,a man is sitting on the floor and feeding a bird to a woman.,0.4032074213027954
+180,6078524411,two babies are sitting at a table and eating something and making noises.,0.3980807960033417
+181,3581585756,a group of kids are riding in a train and talking to each other.,0.4650140702724457
+182,3046900922,a man and a child are walking around in the yard with a leaf blower.,0.4599338173866272
+183,6233408665,a group of people are singing and dancing while a man is playing guitar.,0.35131826996803284
+184,4391941521,a little girl is holding a book and then she picks up a book and begins to cry,0.3577132225036621
+185,6326014711,a group of people are sitting around a table and talking to each other.,0.5478715300559998
+186,2614918961,two babies are sitting at a table and playing with legos.,0.564132034778595
+187,2987766537,a baby is laying on a blanket and is trying to crawl.,0.49331554770469666
+188,4327413406,a man is walking around a box and then opens it and then opens it.,0.2877623736858368
+189,8557532213,a little boy is kicking a soccer ball into a goal and falls to the ground.,0.5040766596794128
+190,5467727317,two elephants are sitting on the ground and then the elephant walks away.,0.3707328736782074
+191,3843551232,a dog is walking around on the floor and a person is walking around.,0.33459338545799255
+192,3345608051,a dog is running and attacking a man in the dirt.,0.32739710807800293
+193,5889898795,a group of people are on a rope and they are swinging back and forth.,0.41591590642929077
+194,5048503508,two young boys are running down a path in the woods.,0.49302583932876587
+195,5129152550,a group of people are standing outside and clapping while a man is talking.,0.34950727224349976
+196,4603484665,a small dog is running around and a person is talking to them.,0.3500977158546448
+197,4321061640,a woman is holding a baby and the baby is making faces.,0.5069814324378967
+198,8231078091,a band is playing music on stage while a man plays a guitar.,0.40963199734687805
+199,5549276998,a group of people are on a field watching a game of chicken.,0.3549487590789795
+200,4483447009,a chicken is standing in a fence and is being fed by a person.,0.3782932758331299
+201,2454242177,a baby is playing with a toy car and then falls down.,0.4272209107875824
+202,8513603944,a child is skiing down a hill while a man cheers him on.,0.4136369526386261
+203,3218498932,a group of people are sitting on a couch and watching a video of them.,0.4473689794540405
+204,3350567104,three girls are on stage dancing and dancing to music.,0.43319839239120483
+205,6329954198,a man is kneeling on the ground and is trying to get his shoes off.,0.3835373520851135
+206,2930782930,a man is holding a baby and waving at the camera.,0.4698147177696228
+207,2560755432,a cat is lying on a couch and a person is petting it.,0.49294576048851013
+208,7923062808,a young boy is playing a violin in a room.,0.4951373338699341
+209,3249402410,a group of people are in a kitchen making pizzas.,0.5191526412963867
+210,3859186294,a young girl is dancing around a room with other people.,0.36872920393943787
+211,7442562474,a cat is laying on a bed and a person is petting it.,0.5711125731468201
+212,7711730886,a boy is riding a skateboard down a hill and then he turns around.,0.4039660394191742
+213,3158022797,a group of people are dancing and singing while one of them is holding a microphone.,0.3790457546710968
+214,6544852781,a group of people are watching a construction site and one man is pushing a digger.,0.32750174403190613
+215,6779825956,a baby is sitting in a high chair and eating a piece of watermelon.,0.6605269908905029
+216,3832159922,a group of people are playing instruments and singing while a woman plays the piano.,0.4497964084148407
+217,6727904179,a group of people are standing outside and talking about a window.,0.4092887043952942
+218,6443512089,a little girl is pushing a toy car down the sidewalk.,0.48704805970191956
+219,5141164851,a little girl is dancing in the living room and then she stops and walks away.,0.36949554085731506
+220,5349969207,a dog is on the floor and a person is using a remote to light the dog.,0.3791341185569763
+221,4674481985,a group of people are standing on a rock waterfall and one person jumps off.,0.39083999395370483
+222,9253832482,a man is riding a skateboard on a sandy beach.,0.5372180342674255
+223,8811725760,a baby is sitting on a playground bench and a woman is pushing the child up the slide,0.3209173083305359
+224,10127533784,two people are fencing in a gym while others watch.,0.46974876523017883
+225,3851913128,a group of people are in a pool and they are waving their arms.,0.4787442982196808
+226,2810112808,a group of men are sitting around a table and drinking beer.,0.5405102968215942
+227,2735019707,a group of people are playing drums and singing while a man plays the drums.,0.38411006331443787
+228,4185271324,a woman is holding a baby and the baby is waving at the camera.,0.4941372573375702
+229,3555755537,a man is laying on the ground and a dog is lying on the ground.,0.45585915446281433
+230,3631224968,a little girl is playing a toy and then she walks around in front of a tv.,0.3442557156085968
+231,9367977542,a young boy is sitting on a couch and playing with a baby.,0.4838612675666809
+232,8493226484,a woman is sitting on a chair and hugging a small child.,0.42001453042030334
+233,8387356484,a baby is sitting in a high chair and is looking at the camera.,0.4798007309436798
+234,5134317883,a man is carving a pumpkin with a knife and a woman is talking in the background.,0.5040175318717957
+235,4984331176,a group of people are playing a game of jump rope.,0.5019493103027344
+236,7996612680,a dog is being walked around in a toy train while a dog is barking.,0.2889513671398163
+237,4378803532,a man is juggling three flaming torches while two other people stand around him.,0.38296201825141907
+238,5623068492,a man is punching a punching bag with a man in a room.,0.43446239829063416
+239,6239210933,a little boy is sitting on a couch and playing with a toy.,0.5384876132011414
+240,5445581571,a dog is standing on the floor and a person is brushing the dog.,0.37417539954185486
+241,2434163586,a man is eating a piece of food while others are watching.,0.44656792283058167
+242,6571566229,a man and a woman are sitting on a bed and making funny faces.,0.4834175705909729
+243,6392571185,a man and a woman are standing on a rocky hill and one is trying to climb a,0.33447393774986267
+244,5635265624,a baby is sitting on a woman's lap and is ripping paper.,0.5091162919998169
+245,3502722122,a baby is sitting on a couch and looking at a book and talking to someone.,0.4489234387874603
+246,2589540862,a little girl is dancing in the living room while a man is watching.,0.43945616483688354
+247,6037747123,a group of kids are playing golf in a field.,0.41368359327316284
+248,4178164207,a man jumps off a roof into a swimming pool.,0.5214864015579224
+249,2976913210,a man is riding a four wheeler through a river.,0.5848355293273926
+250,5133787349,a group of people are on stage and they are fighting.,0.4578179717063904
+251,4942054721,a person is walking through a wooded area and is looking at some food.,0.28546735644340515
+252,2623954636,a little boy is playing with a ball and then he throws it to the wall.,0.4156440198421478
+253,3897746373,a group of children are swimming in a pool while adults cheer them on.,0.5335286259651184
+254,5406108447,a baby is sitting on the floor and blowing her nose.,0.5304027199745178
+255,2957808913,a man is dancing in the middle of the street while people walk by.,0.5525221824645996
+256,5603283408,a little girl walks down a sidewalk and then walks away.,0.44743695855140686
+257,3902997424,a man is playing a musical instrument on the beach while another man is playing the drums.,0.5059891939163208
+258,6139126979,a person is riding a horse around a dirt track.,0.47080564498901367
+259,8388104887,a dog is running around with a dog and the dog is running around.,0.29888853430747986
+260,3981865268,a man is playing a guitar and singing on stage.,0.40275809168815613
+261,2488592048,a man is playing a keyboard while another man is watching him.,0.33720481395721436
+262,2963250556,a man is riding a bike through the woods and then jumps off a ramp.,0.4577292799949646
+263,6854746224,a football player runs and throws a ball to another player.,0.422981321811676
+264,5421648216,a goat is being fed by a person in a fenced area.,0.3597527742385864
+265,10024067406,a man is rock climbing while another man is talking to him.,0.4240451455116272
+266,2679130168,a baby girl is sitting on a couch and playing with a large pillow.,0.4386076331138611
+267,6509417853,a group of people are sitting at tables and talking to each other.,0.49476754665374756
+268,3562017845,a person is holding a bird in their hand and they are feeding it.,0.40348124504089355
+269,2697261300,a man is holding a baby and the baby is smiling.,0.45679500699043274
+270,2463240291,two men are dancing in a room and they are wearing sunglasses.,0.3602731227874756
+271,7999756100,a group of people are outside and one man is running down a hill.,0.42719128727912903
+272,3102155856,a man is riding a mountain bike down a hill.,0.5563570261001587
+273,4688219212,a young man is swinging on a trapeze and then jumps off.,0.44948726892471313
+274,8449316191,a young girl and a boy are playing a song on the violin.,0.47929537296295166
+275,2871995580,a little boy is playing with a toy and a man is talking to him.,0.4784263074398041
+276,8797589693,a group of students are in a classroom and one of them is eating something.,0.40887683629989624
+277,2535384528,a man is hitting a golf ball with a golf club.,0.5845175981521606
+278,5549243726,a baby is sitting on a couch and a woman is talking to her.,0.5332053303718567
+279,7390487924,a woman is walking a dog around a field with a leash.,0.4125022292137146
+280,6163877860,a baby is crawling on a couch and then falls down.,0.4781769812107086
+281,5721942178,two men are on a motorcycle and one of them is trying to get the other to go,0.39565393328666687
+282,6047705716,three people are wearing costumes and singing a song while wearing a green hat.,0.2654772698879242
+283,4839878698,a group of people are riding on a boat and laughing.,0.5341949462890625
+284,8895536098,a person is holding a bird in their hand and is feeding the birds.,0.4060216248035431
+285,6964124866,a little girl is reading a book to a little girl.,0.5021522641181946
+286,3567212996,two kids are jumping on a trampoline and doing flips.,0.5811251997947693
+287,5789092359,a man is holding a baby and is holding a baby in his hands.,0.3631303906440735
+288,13311361995,a young boy plays with legos on a table.,0.43580788373947144
+289,6265968082,a man is playing guitar and singing while another man plays a guitar.,0.45925676822662354
+290,2796821016,a young boy is rolling around on the floor and then another boy is laughing.,0.347314715385437
+291,5042598042,a man is dancing in front of a group of people.,0.5359750390052795
+292,4722053996,a group of people are standing on a sidewalk and looking at something.,0.38088420033454895
+293,6516459343,two men are standing at a table and one is cleaning the shoes.,0.4102044105529785
+294,3340340268,a little girl is walking around with a toy dog and then she picks up a toy and,0.34091439843177795
+295,7300403730,a man is opening a wine bottle with a knife.,0.4865712821483612
+296,5852486634,a man is lifting a large amount of weight over his head.,0.4913543462753296
+297,2401167740,a man is talking about a cup of tea and then he is drinking from a cup.,0.3450947701931
+298,4846820256,a group of people are sitting in a boat and they are steering a rope.,0.42103010416030884
+299,7533369046,a baby is crawling on the floor and then she is trying to get her attention.,0.34765520691871643
+300,9208803675,a group of people are swinging on a trapeze and doing tricks.,0.5389002561569214
+301,2697214342,two men are working on a wood table and one of them is using a hammer to break,0.38413527607917786
+302,6895608152,a group of young girls are dancing ballet on a stage.,0.5191977024078369
+303,2782658657,a little girl is walking down a sidewalk and then she stops and walks away.,0.3763115108013153
+304,3814690167,a man is playing guitar and singing while a group of people are watching.,0.4775582551956177
+305,2726497009,a person is riding a bike down a dirt trail.,0.4712677001953125
+306,5681946487,a woman is washing a baby's hair in a sink.,0.5648162364959717
+307,3121571439,a man and a woman are dancing together outside on the sidewalk.,0.5661472082138062
+308,3960291106,a man and woman are laughing and laughing while a woman is laughing.,0.3698897957801819
+309,5907839036,a man is standing on a dock and talking to a woman on a boat.,0.43382081389427185
+310,4770216656,a man is swinging a child in a swing and the child is swinging back and forth.,0.44277748465538025
+311,3152905721,a woman is sitting on a couch and holding a cat while she is holding a plate.,0.38969549536705017
+312,7571121368,a boy is walking on a platform and then he jumps off the top of a tall building,0.32784315943717957
+313,8968742990,a group of people are in a room and they are doing some type of dance moves.,0.46762561798095703
+314,6025238212,a man and a woman are having a conversation with a man.,0.3394593894481659
+315,8783897632,a group of people are riding bikes down a path.,0.4755232334136963
+316,6143391925,a baby is kicking a soccer ball around a living room.,0.4467714726924896
+317,6253433310,a young boy is in a pool and then jumps into the water.,0.4370543360710144
+318,3598080384,a scuba diver is swimming in the ocean and is looking at the camera.,0.4212648272514343
+319,5173770364,a baby is sitting on a couch and playing with a person's foot.,0.5891798138618469
+320,3167397062,two people are scuba diving and one of them is looking at the camera.,0.4923958480358124
+321,9735768590,a woman is holding a baby and the baby is laughing.,0.5499294996261597
+322,8801611750,a woman is sitting at a desk and is playing with a box.,0.3921903073787689
+323,10779838974,a little girl is pushing a wheelbarrow with a little girl.,0.4356214702129364
+324,3066064005,a group of women are in a room and they are playing a game of food.,0.36246031522750854
+325,8627074061,a little girl and a man are sitting at a table and playing with toys.,0.44214779138565063
+326,4528442941,a little boy is sitting on a couch and laughing while a woman is talking to him.,0.49919065833091736
+327,2606627116,a bird is in a tree and a person is looking at the bird.,0.29074904322624207
+328,8224504302,two boys are on stage singing and singing into a microphone.,0.5053167343139648
+329,2834146886,a dog is sitting on a chair and a person is trying to get it to the floor,0.3591516613960266
+330,3655906094,a man is playing the drums while another man plays the drums.,0.5570973753929138
+331,8594309349,a group of people are scuba diving and one person is filming the fish.,0.39840400218963623
+332,5789897457,a little girl is playing with a ball and then she throws it.,0.42390012741088867
+333,6356067859,a woman is brushing a horse's tail while a man is talking to her.,0.413155734539032
+334,3112351937,two people are scuba diving and one of them is swimming in the water.,0.44000598788261414
+335,4470594534,a little boy is brushing his teeth and then he walks away.,0.3835291266441345
+336,2932897373,a man is walking down a sidewalk and a man is walking around the house.,0.3099328279495239
+337,5235909148,a man is hanging from a rope and is being pulled by a rope.,0.35180142521858215
+338,6104044648,a man is canoeing down a river and then flips over.,0.3920659124851227
+339,10607095936,a woman is on stage and she is getting ready to take a picture.,0.38766637444496155
+340,2400171624,a person is skiing down a hill and jumps over a small jump.,0.4449352025985718
+341,3233088823,a man is using a large machine to remove the snow from a truck.,0.41302528977394104
+342,6642268693,a person is showing how they play with a dog.,0.4312790632247925
+343,8312058649,a baby is swinging in a swing and moving its arms around.,0.4153311252593994
+344,9361705684,a man is using a lighter to extinguish a car out of a field.,0.40290215611457825
+345,3402648543,two dogs are playing with a dog and the dog jumps up and down.,0.35706523060798645
+346,10727696143,a boy is sitting on a chair and watching tv.,0.3952483534812927
+347,2480962483,a dog is running and catching a frisbee and the dog catches it.,0.4556364417076111
+348,4301351492,a man is riding a camel in the desert while another person is talking in the background.,0.48671966791152954
+349,7211397068,a baby is sitting in a baby walker and is making faces.,0.4568118155002594
+350,7453733046,a baby is in a baby stroller and a man is playing with a baby.,0.39341360330581665
+351,8664834058,a woman is standing in the woods and looking at a phone while looking at something.,0.3785088062286377
+352,5940941487,a group of three people are singing and playing guitar and singing.,0.42089372873306274
+353,3375218204,a little girl and a man are playing in a living room and one girl runs into a,0.37753599882125854
+354,3124551255,a little girl is playing with a toy and shaking her hand.,0.389622300863266
+355,9088819598,a baby is laying on a beanbag and playing with a toy.,0.45819520950317383
+356,4915733559,a little boy is playing with a woman's hand while he is sitting on a couch,0.3744065761566162
+357,7288107396,a little boy is walking around a wooden staircase and a woman is talking to him.,0.37907978892326355
+358,3372023610,a group of people are playing instruments and one of them is holding a snake.,0.4626612961292267
+359,7863692240,a man is holding a baby and the baby is jumping in the pool.,0.4271033704280853
+360,4249756405,a man is playing the violin while another man is playing the drums.,0.45594367384910583
+361,7213032910,a woman is holding a baby in a pool and the baby is trying to get him to,0.395922988653183
+362,6128165442,a dog is laying on a bed and a person is picking up a yellow leafy basket,0.28211039304733276
+363,5998120460,a man is playing with a baby and the baby is laughing.,0.5195096731185913
+364,3471421544,a baby is in a play room and shaking his head no and forth.,0.420098215341568
+365,5793944924,a little boy is riding a bike down a driveway.,0.5058009624481201
+366,4123211145,two little girls are dancing and singing while dancing to music.,0.4043707251548767
+367,8396167542,a chicken is walking around and then a chicken is shown.,0.32086366415023804
+368,7691172922,a dog is walking around a fence and a person is barking at them,0.30916646122932434
+369,4420239986,a dog is sitting at a table and a person is brushing the dog's head.,0.39116472005844116
+370,6879924118,a group of people are standing on a field and talking to each other.,0.4839768707752228
+371,3113970118,a man and woman are standing in a river and a man is standing next to him.,0.38916096091270447
+372,2446152640,two men are practicing karate moves in a martial arts studio.,0.47487640380859375
+373,4644717465,a man is talking to the camera and then a man is talking to him.,0.39819514751434326
+374,7978730923,a baby is walking and holding onto a large ball and then he walks away.,0.32945719361305237
+375,5064681723,a person is walking with a dog and then a person is walking behind it.,0.3034476339817047
+376,2434859163,a man is watching a dolphin swims in a large tank of water.,0.4044981598854065
+377,3303565503,a man and a woman are dancing to music in a room.,0.524678111076355
+378,2782307049,a person is repelling down a cliff with a rope attached to them.,0.49102839827537537
+379,6522981491,a group of people are on stage playing instruments and singing.,0.49292445182800293
+380,7088595057,a goat is being fed by a man while the sheep is being fed.,0.30685949325561523
+381,6024684644,a man and a woman are building a sand castle on the beach.,0.6156728863716125
+382,4147398280,a young boy is trying to solve a rubik's cube.,0.6431246995925903
+383,8330342965,a little girl throws a ball at a man who is standing in a living room.,0.45989328622817993
+384,6713120511,a group of people are sledding down a hill and one of them falls down.,0.5871362090110779
+385,2559262403,a baby is crawling on the floor and a person is playing with a dog.,0.386357843875885
+386,9142783710,a group of people are standing around a table and looking at a picture.,0.37456852197647095
+387,4740074365,a man and woman are dancing in front of a crowd of people.,0.45687273144721985
+388,6018514357,a man is walking with a toddler on a playground slide.,0.4482867419719696
+389,6272786009,a group of people are in a race in a race.,0.4587101936340332
+390,5116088152,a baby is sitting in a high chair eating ice cream.,0.569727897644043
+391,9326864171,a group of people are skating around on a paved road.,0.36915141344070435
+392,7868268032,a bird is on a wooden deck and a man is feeding the bird.,0.4396408498287201
+393,4075791856,a group of people are on stage and they are playing a xylophone.,0.47493061423301697
+394,9565310990,a baby is crawling across the grass and then falls to the ground.,0.4289224147796631
+395,14012319794,a little girl is playing with a toy sword and a little girl is playing with it.,0.45954325795173645
+396,11710271554,a baby is sitting in a bathtub and is being washed by a woman.,0.4985576570034027
+397,8624866732,a woman is teaching a man how to roll dough on a table.,0.43857935070991516
+398,8513322600,a group of children are playing with a cell phone and a man is talking to them.,0.3998740315437317
+399,5031174740,a woman is holding a small boy and they are walking on the street.,0.42551276087760925
+400,2708133623,a person is filming a puppet show with some small pieces.,0.23640181124210358
+401,5343885791,two toddlers are standing at a zoo and feeding the animals.,0.3791263997554779
+402,8254300526,a baby is sitting on a baby seat and is being pushed around by a man.,0.4077017605304718
+403,4279106208,a woman and two children are playing on a bouncy slide.,0.510644257068634
+404,3846475848,a man is washing a wet dog in a sink.,0.4623963236808777
+405,13624759154,a woman and a boy are sitting at a table playing with blocks of dominoes.,0.46900951862335205
+406,4484329333,a person is walking in the snow and is going down a hill.,0.3478763699531555
+407,8208035645,a young boy rides his bike around a skate park.,0.5124909281730652
+408,2525076113,a woman is swimming in a pool with a child.,0.48026102781295776
+409,2669452260,a man is drinking from a cup and then a woman is walking in the street.,0.3576604425907135
+410,11313832945,a woman walks down a path and looks at a book while a boy walks by.,0.3051711916923523
+411,2793806282,a woman is holding a dog in a pool and she is trying to get him to go,0.35106557607650757
+412,3380344744,a woman is washing a baby's hair in a sink.,0.6483332514762878
+413,4310327804,a baby is crawling on a wooden floor and then falls over.,0.407297819852829
+414,7531285946,a woman is climbing up a ladder and then falls down.,0.41184768080711365
+415,6305304857,a girl is sitting in a chair and is trying to tie a tie dye.,0.4892454147338867
+416,11584566583,a woman is talking to a group of young girls and they are holding a microphone.,0.3618241250514984
+417,6160414832,a group of people are playing monopoly and one kid is playing monopoly.,0.39679500460624695
+418,2940373590,a man and woman are dancing together on a dance floor.,0.5889673233032227
+419,5786394363,a group of people are playing football in a field.,0.5535691380500793
+420,4886753053,a man is driving a tractor and is moving dirt around.,0.2887137532234192
+421,6244675392,a baby is sitting on a man's lap and the cat is sitting on the couch,0.4436038136482239
+422,4260763967,a little boy is sitting on the floor and is tying a pair of toys.,0.4137531816959381
+423,5863411262,a man is petting a donkey while another man is standing next to him.,0.43659770488739014
+424,4166942239,two men are playing rock paper scissors and one of them wins.,0.5037145018577576
+425,3550839192,a baby is sitting in a stroller and is being pushed by a man.,0.5267675518989563
+426,2920952624,two women are cooking in a kitchen and one is stirring a pot of food.,0.43147504329681396
+427,3147903298,a group of people are playing musical instruments on a stage.,0.5973042845726013
+428,6623763941,a young boy is playing with a toy train set.,0.5116364359855652
+429,4138579400,a young girl is sitting at a table and playing with some toys.,0.43318691849708557
+430,5938534126,a man is using a hose to remove a large truck from the back of a road.,0.40178024768829346
+431,8318310610,a group of girls are dancing on a stage in front of a crowd.,0.5746181607246399
+432,3429509208,a little boy is vacuuming the floor with a vacuum cleaner.,0.5232714414596558
+433,5607805258,a cat is walking on the floor and a person is petting a cat.,0.4447448253631592
+434,8064178441,a woman and a baby sit on the floor and play with a stuffed animal.,0.5047457814216614
+435,4130504920,a baby is laying on a bean bag and laughing while a man is holding a ball.,0.42276865243911743
+436,2740522355,a couple of people are riding a jet ski and they are being pulled by a boat.,0.46930333971977234
+437,6711090395,a group of men are playing football in a field.,0.5379883646965027
+438,8509844770,a man is holding a long pole and then he puts it down on his back.,0.3548424541950226
+439,4136617240,a little girl is dancing to the music in front of a tv.,0.5307958126068115
+440,2510696559,a boy rides a bike up a ramp and then jumps off a ramp.,0.4638846814632416
+441,4161312763,a group of people are standing around a forest and they are holding sticks.,0.34000784158706665
+442,6168295272,a group of young children are sitting on the floor and a little girl is dancing.,0.44126373529434204
+443,4178478570,a man is holding a little girl and they are walking around in a field.,0.3908894956111908
+444,5344655615,a young man is playing a song on a piano.,0.5904172658920288
+445,5923266624,a baby is sitting in a high chair and eating a snack.,0.5476517677307129
+446,4164771889,a group of kids are building a sand castle on the beach.,0.6177082657814026
+447,2821968703,a man is water skiing on a lake and then falls off.,0.4374937117099762
+448,12279931176,a young boy is skiing down a hill and then stops to the camera.,0.41102343797683716
+449,3076630395,a band is playing music and one man is playing the guitar and the other is playing the,0.37608903646469116
+450,3171006258,a man is sitting on a snowboard and is trying to get up a small hill.,0.35587969422340393
+451,2977504625,a man is pushing a small child in a toy car down a road.,0.5775410532951355
+452,9571377943,a group of elephants are eating in a field while a man is talking.,0.3998014032840729
+453,5801184682,a cat is laying on the floor and someone is petting it.,0.5721387267112732
+454,3520212139,a woman is doing a handstand outside on a bridge.,0.4944812059402466
+455,6860322796,a man and a child are playing in the snow and a dog runs around.,0.4651012718677521
+456,4276006683,a cat is being petted by a person while the cat is laying on the floor.,0.465002179145813
+457,3245585355,two monkeys are sitting on a fence and one of them is holding a monkey.,0.328809916973114
+458,5885887012,a toddler is pushing a toy car with a toy car.,0.4840948283672333
+459,4970187485,a man is hitting a baseball with a bat and a bat.,0.5053335428237915
+460,7921066748,a boy and a girl are dancing to music and laughing.,0.4560629725456238
+461,6542914065,a man is running and chasing another man on a football field.,0.43827953934669495
+462,3237523883,a person is sitting on a lake and is feeding a bird.,0.35817334055900574
+463,9965404135,two toddlers play with a toy in a play area.,0.3886013627052307
+464,5061117640,a man is sitting in a chair and then he is slapped by a man.,0.2729429006576538
+465,4616024181,a group of pigeons are eating food in a field.,0.39417481422424316
+466,4935987905,a dog is walking around in the grass with a leash and a person is talking to them,0.3395334482192993
+467,3355698421,a group of people are sitting around a table and drinking wine.,0.5340361595153809
+468,8211075660,two men are standing in the middle of the street talking to each other.,0.5355410575866699
+469,7331927796,a boy is walking with a dog and a dog is running around him.,0.4107787609100342
+470,7572859950,a man is tickling a baby in a car and the baby is laughing.,0.4803876280784607
+471,8277866423,a cat is laying on a bed and a person is shaking her head.,0.387460857629776
+472,3809348286,a little boy is rolling around on the grass and another boy is trying to get him to,0.31458601355552673
+473,6793786769,a young boy is playing with a train set and then falls over.,0.4437825679779053
+474,5933003028,a person is using a desk to make a beat on a desk.,0.4232481122016907
+475,4458796109,two men are staring at the camera and making faces.,0.4447380304336548
+476,3441428429,a man and a woman are ice skating on a stage.,0.5331159830093384
+477,5429688959,a man is playing a guitar on stage with a band playing the guitar.,0.440402090549469
+478,8594314852,a young boy is riding a bike down a path in the woods.,0.5179615616798401
+479,4658481559,a girl is writing something on a piece of paper while another girl is sitting next to her,0.41840848326683044
+480,7499763064,a man is rock climbing while another man is talking in the background.,0.48373958468437195
+481,6582763207,a woman is playing a guitar while a little girl is holding a toy.,0.39897435903549194
+482,4273039295,a little boy is walking in the snow and then he walks away.,0.390659362077713
+483,4882821564,a little boy is playing with a toy and putting it in a bag.,0.3597078025341034
+484,2567843468,a little girl is playing with a toy in a pool.,0.4718330204486847
+485,5498331490,a cat is in the bathroom and a person is trying to get the toilet.,0.4089827835559845
+486,3808646252,a little girl is sitting on a couch and playing with a doll.,0.4832138121128082
+487,5047408177,a little girl is helping a man put clothes in a basket.,0.4548269510269165
+488,4949582792,a baby is sitting in a stroller and playing with a baby.,0.4961443841457367
+489,4671452046,a woman is holding a baby in a kitchen and the baby is holding a baby in her,0.4534938335418701
+490,3508459605,a little boy is playing with a water hose and a man is playing with it.,0.3611021637916565
+491,6046149003,a little girl is sitting in a car and is screaming while another girl is driving a car,0.313468873500824
+492,3557498300,a man and a little boy are running around in a field flying kites.,0.503868043422699
+493,4388652400,a dog is watching tv and watching a dog run around.,0.34683921933174133
+494,11966080214,a little girl is sitting on the floor playing with a xylophone.,0.7022399306297302
+495,5333075105,a man is walking through the snow with a snow pick.,0.37882986664772034
+496,2463423442,a little girl is walking around a room and then she opens the door.,0.3310445249080658
+497,7295075568,a man is playing a guitar in a room with a wall.,0.36507099866867065
+498,10109097475,a group of people are riding on a race car.,0.38455623388290405
+499,5734013778,a flock of birds are eating from a person's hand.,0.508842945098877
+500,4762946272,a woman and a child are making a recipe together.,0.45624351501464844
+501,2990321092,a man is eating a doughnut and then takes a bite out of it.,0.4223363697528839
+502,2596300565,a little boy is pushing a shopping cart around the store.,0.518896222114563
+503,3022452780,two men are using a welding tool to make sparks.,0.43742090463638306
+504,9217939684,a group of young children play in a bedroom and one of them is jumping up and down,0.366059273481369
+505,4077228320,a person is holding food in their hand and feeding it to a person.,0.4136166572570801
+506,9293415110,a woman is dancing on stage while a band plays the guitar.,0.4094076454639435
+507,2679328607,a man is holding a book to a baby sitting on a couch.,0.4929719567298889
+508,4742307275,a person is showing how they use a cell phone to look at it.,0.36916249990463257
+509,4272084125,a woman is opening a wine bottle and then she opens it.,0.38359084725379944
+510,6016539775,a young boy swims in a pool while a woman cheers him on.,0.5181825160980225
+511,7223854838,a group of children are at a zoo and they are feeding the animals.,0.43918174505233765
+512,2604394962,a man is standing on a brick wall and is playing with a dog.,0.4585200548171997
+513,2975784201,a man throws a frisbee into a tree and then throws it to a tree.,0.43907952308654785
+514,8080432373,a baby is sitting on a chair and a man is playing with his feet.,0.4483143389225006
+515,3445431963,a group of people are scuba diving and one of them is swimming.,0.4213367998600006
+516,2925298951,a group of people are on the beach and drinking from a cup.,0.4149278998374939
+517,3026084730,a man is accepting an award at a ceremony while a group of people are standing around him,0.36057019233703613
+518,5544341146,a group of people are playing volleyball in a circle.,0.43722283840179443
+519,4561932357,a little boy is walking around in a room with a woman and a woman is talking to,0.32393771409988403
+520,5945172741,a little girl is playing with a baby and the baby is playing with her.,0.36747318506240845
+521,3383804222,a bear is being held in a cage and a person is petting it.,0.33700883388519287
+522,5979720550,a person is driving a motorcycle with a wiper on the side of the road.,0.3855969309806824
+523,2705374471,a little boy is playing with a baby and then he falls on the floor.,0.40229716897010803
+524,7914014994,a young boy is sitting in a stroller and is trying to blow bubbles out of a,0.5037041306495667
+525,9486884729,a woman is talking to a camera while she is smoking a cigarette.,0.3237793445587158
+526,8752043000,a baby is sitting in a baby seat and is laughing.,0.4525811970233917
+527,2400715506,a person is laying on their stomach while a person is rubbing their belly.,0.42559191584587097
+528,4422555334,two babies are playing with a toy car and one of them is pushing the other.,0.38531941175460815
+529,3719793245,a woman and a child are riding in a toy car.,0.47648680210113525
+530,13341187083,a dog is running down a hill and a dog runs by.,0.3391454517841339
+531,4838113006,a woman and a boy are playing chess and making a chess move.,0.3589611053466797
+532,5560429789,a little boy is dancing in front of a dog and a dog is watching.,0.4294849634170532
+533,6818241178,a young boy runs and hits a baseball with a bat.,0.44667938351631165
+534,3462517143,a dog is in a pool with water and a person is giving them a bath.,0.4106872081756592
+535,4010069381,a group of people are playing guitars and singing while a man plays the guitar.,0.40917715430259705
+536,4822859674,a man is sitting on the floor with a baby and a little boy is eating a snack,0.3867711126804352
+537,5504913999,a person is skiing down a hill and then stops to the camera.,0.3547009527683258
+538,5686660408,a group of people are putting together a pyramid on a table.,0.47775906324386597
+539,5803861992,a baby is laughing and playing with a baby and laughing.,0.4159277677536011
+540,2500343755,two children are on a ladder and they are playing with plastic bats.,0.35212913155555725
+541,6205856607,a man is holding a little girl and she is brushing the horse's mouth.,0.42599472403526306
+542,5662041273,a young boy is playing with a toy train set and then he falls off the floor.,0.42079052329063416
+543,6621511673,a man is playing with a little boy and he is playing with his fingers.,0.39523831009864807
+544,5902452647,two toddlers are playing with a ball in the yard.,0.46268928050994873
+545,5879651428,a man is sitting on a bench playing a guitar and singing a song.,0.5613510012626648
+546,7987845241,a woman is holding a dog and the dog is shaking its paw.,0.34928759932518005
+547,9213637099,a group of girls are huddled together and they are doing a cheer.,0.40922316908836365
+548,7961460440,a man is climbing down a mountain with a rope.,0.431558221578598
+549,2877270840,a man is drinking a glass of beer and talking about it.,0.506436288356781
+550,3469864014,a man is holding a fish and then a cat jumps up and eats it.,0.3497891426086426
+551,3376544720,a man is riding a mechanical bull and then he falls off.,0.5093994140625
+552,8253302563,a baby is playing with a toy car and then falls down.,0.3874981701374054
+553,4189100053,a woman is feeding a baby some food from a spoon.,0.4564230442047119
+554,5522880149,a group of people are standing around a rock and looking at the camera,0.37518373131752014
+555,4036955771,a group of people are playing instruments outside in a parade.,0.4544260501861572
+556,12682618843,a dog is lying on a bed and a person is petting it.,0.45780178904533386
+557,4083875373,a little girl is doing cartwheels in front of a tv.,0.5769532322883606
+558,2854886555,a young boy is picking up a piece of fruit and putting it in a bag.,0.49033209681510925
+559,3452354871,a man is holding a bird in his hand and feeding it.,0.4443598985671997
+560,3054871653,a group of people are doing a dance together in a mall.,0.40656405687332153
+561,2435100235,a man is riding a bike with a backpack on a bicycle.,0.3413582444190979
+562,7197644906,a little girl is standing up and hugging a little girl.,0.34085044264793396
+563,6480018109,a woman is pushing a man in a wheelchair down a hallway.,0.5352715849876404
+564,9917882506,a little girl is riding a bike in a circle and another girl is riding a bike.,0.3979816138744354
+565,5352022985,a dog is running in the snow and a person is running around.,0.3791159391403198
+566,8224492254,a baby is being held by a man and is making noises with his mouth.,0.3861156105995178
+567,6018490041,a group of people are working on a table and some are cleaning the floor,0.2924201190471649
+568,6136926089,a little boy is pushing a toy car around a room.,0.40486621856689453
+569,6142416815,a baby is swinging in a baby swing and swinging around.,0.42563214898109436
+570,6913478890,a little girl is washing her hands and then rinses them off the faucet,0.4605325758457184
+571,5875535585,a band is playing on stage and a man is singing into a microphone.,0.4644211232662201
+572,4707679105,a man is sitting on a couch with a baby and he is reading a book.,0.49109384417533875
+573,2599937944,a person is hanging from a rope and then jumps off into the water.,0.4279511570930481
+574,4494388392,a man is walking down a sidewalk and then a man is talking.,0.293091744184494
+575,4251505427,a woman is holding a baby and talking to the camera while the child is waving at the,0.34325966238975525
+576,7164729910,a little boy is pushing a toy car around the living room.,0.4770827889442444
+577,4566666620,a man is playing a guitar and singing a song.,0.5598395466804504
+578,4333544549,a woman is walking a dog down a sidewalk while a man is talking to her.,0.5068306922912598
+579,9600964192,a man is helping a toddler climb up a slide on a playground.,0.44502565264701843
+580,4013751996,a little girl is riding a scooter on the sidewalk.,0.5205376744270325
+581,3394908528,two boys are walking through the snow and one of them is holding a small child.,0.381108820438385
+582,4815534482,a little boy is driving a toy car down a parking lot.,0.5321013927459717
+583,4087013668,a baby is sitting on a table and is eating a bowl of food.,0.3862326145172119
+584,4087654898,a little boy and girl are watering the leaves with a watering can.,0.4430500864982605
+585,5017166671,a group of people are playing instruments in a large room.,0.44047853350639343
+586,3427674558,a group of people are on a stage performing a dance routine.,0.5503987669944763
+587,3963997053,a car is burning on a road and a man is trying to put it out.,0.3784351944923401
+588,7560357838,a baby is laying on a bed and sticking his tongue out.,0.5184157490730286
+589,6754608321,a little girl is sitting on a couch and hugging a baby.,0.40761417150497437
+590,6277800530,a man is riding a four wheeler through a stream.,0.5409320592880249
+591,5308503740,a dog is running across a yard and a dog runs towards the ball.,0.3564683496952057
+592,2478735417,a man and woman are talking to each other while they are sitting down and talking.,0.4013189375400543
+593,3745749088,a baby is sitting in a high chair and blowing their nose.,0.5277252197265625
+594,8457210773,a dog is running in the snow and a person is running around.,0.39469113945961
+595,4488066715,a baby is sitting at a table and is being held by a man and a woman is,0.37162142992019653
+596,2435633172,a group of people are watching a bear in a zoo.,0.41604575514793396
+597,3869005094,a group of people are practicing martial arts in a gym.,0.5653946399688721
+598,8740703217,a baby is sitting in a high chair and eating food and then she puts it in her,0.3964398503303528
+599,6456816543,a young boy is sitting at a table eating food and shaking his head back and forth.,0.555347204208374
+600,6235973229,a woman is holding a baby and the baby is swimming in the water.,0.5170727372169495
+601,4151403382,a man is showing a little boy how to play with a toy.,0.4400518834590912
+602,5042012587,two men are dancing in front of a store while one of them is dancing.,0.382669061422348
+603,3491520401,a baby is sitting on a toy car and is moving around.,0.4284824728965759
+604,5011084591,a group of people are walking down the street and talking.,0.4541551470756531
+605,6828558059,two men are sitting on the floor and one is hitting a metal object with a hammer.,0.4956740736961365
+606,4372494989,a man is holding a little boy and the baby is playing with a toy.,0.4110649526119232
+607,9612838272,a group of kids are playing on a bouncy house.,0.5561844706535339
+608,9452744151,a woman is sitting on a train and a little girl is sitting on the back of the,0.4028077721595764
+609,6772999108,two young girls are playing guitars and singing while a man sings.,0.36433184146881104
+610,2829462646,a man is standing in a room and talking to the camera,0.43431785702705383
+611,10030609934,a boy is playing with a toy train and then he picks up a toy and throws it,0.3314857482910156
+612,2971556305,a family is in the kitchen and they are in the kitchen and the woman is laughing.,0.2741813361644745
