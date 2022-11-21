@@ -142,6 +142,9 @@ if __name__ == "__main__":
     parser.add_argument("--csv_dataset_path", type=str, help="Path to csv dataset")
 
     parser.add_argument('--n_frames', default=8, type=int, help="number of frames sampled for input; see data.py")
+
+    # CLIP Parameters
+    parser.add_argument('--clip_frames', default=16, type=int, help="number of frames samples from video for CLIP")
     
     args = parser.parse_args()
     main(args)

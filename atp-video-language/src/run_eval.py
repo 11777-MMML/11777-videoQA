@@ -71,6 +71,8 @@ def main(args):
         with torch.no_grad():
             batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)
             _, _, _, y_pred, _ = atp_downstream_task_forward(atp_model, batch)
+            import pdb
+            pdb.set_trace()
             y_gt = batch[-1]
             idx = batch[2]
 

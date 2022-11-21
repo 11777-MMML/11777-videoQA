@@ -28,7 +28,7 @@ class ATPConfig:
     # ATPSelector params
     use_ste: bool = True  # controls type of selector during ATP training; see ATPSelectorModel.forward
     sel_dropout: float = 0.0
-    d_input: int = 512  # size of the input vision-language embeddings (e.g. CLIP-ViT-B32 is size 512)
+    d_input: int = 768  # size of the input vision-language embeddings (e.g. CLIP-ViT-B32 is size 512)
     
     @classmethod
     def from_args(cls, args):
