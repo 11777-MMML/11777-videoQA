@@ -11,12 +11,42 @@ RESNET_LAYERS = [34, 50, 101, 152]
 # Taken from: https://huggingface.co/docs/transformers/model_doc/vit_mae#transformers.ViTMAEModel
 MAE_CHECKPOINT = 'facebook/vit-mae-base'
 
-class NextFramePredictor(nn.Module):
+class SequenceModel(nn.Module):
     def __init__(self):
-        pass
+        raise NotImplementedError()
 
     def forward(self, x):
-        pass
+        raise NotImplementedError()
+
+class TransformerModel(nn.Module):
+    def __init__(self, max_seq_len=64, input_dim=768, num_heads=3, num_layers=3, activation='gelu'):
+        super(TransformerModel, self).__init__()
+        decoder_layer = nn.TransformerDecoderLayer(
+            d_model=input_dim,
+            nhead=num_heads,
+            activation=activation,
+            batch_first=True
+        )
+
+        self.decoder = nn.TransformerDecoder(
+            decoder_layer=decoder_layer,
+            num_layers=num_layers
+        )
+
+        self.max_seq_len = max_seq_len
+    
+    def forward(self, input, memory, seq_len):
+        mask = torch.zeros_like(input)
+        mask[:, 0:seq_len] = 1
+
+        out =  self.decoder(
+            tgt=input,
+            memory=memory,
+            tgt_make=mask,
+            memory_mask=mask,
+        )
+
+        return out
 
 class FrameEmbedder(nn.Module):
     def __init__(self, model_name: str, **kwargs):
@@ -66,10 +96,27 @@ class FrameEmbedder(nn.Module):
             last_hidden_state = outputs
         
         return last_hidden_state
-        
-class Agent(nn.Module):
-    def __init__(self):
-        pass
 
-    def forward():
-        pass
+class Agent(nn.Module):
+    def __init__(self, num_layers, input_dim, hidden_dim, activation):
+        # Policy Network
+        self.num_layers = num_layers
+        self.input_dim = input_dim
+        self.hidden_dim = hidden_dim
+        self.out_dim = 2
+        layers = []
+
+        # Define all but one
+        for _ in range(num_layers - 1):
+            layer = nn.Linear(in_features=input_dim, out_features=hidden_dim, bias=True)
+            input_dim = hidden_dim
+            layers.append(layer, activation)
+        
+        # This model outputs logits
+        layer = nn.Linear(in_features=input_dim, out_features=self.out_dim)
+        layers.append(layer)
+
+        self.policy_network = nn.Sequential(*layers)
+        
+    def forward(self, input_obs):
+        return self.policy_network(input_obs)
