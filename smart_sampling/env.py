@@ -72,7 +72,6 @@ class FrameEnvironment(Env):
         # calculate the reward
         reward = self._reward(state_input, self._curr_step)
 
-
         # Go to the next frame
         self._curr_step += 1
 
