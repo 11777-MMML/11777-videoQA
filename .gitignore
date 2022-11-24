@@ -1,8 +1,9 @@
 *.mp4
 *.DS_Store
-*checkpoints*
+*.pt
 */.ipynb_checkpoints/
 */feats*
 */models*
+**/data/**
 */log*
 */results*

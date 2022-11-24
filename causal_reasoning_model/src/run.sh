@@ -1,12 +1,12 @@
 eval "$(conda shell.bash hook)"
 python train.py \
---video_features_path /home/ubuntu/11777-videoQA/atp-video-language/data \
+--video_features_path /home/ubuntu/11777-videoQA/atp-video-language/data/NExT-QA/vid_feat \
 --text_features_path /home/ubuntu/11777-videoQA/atp-video-language/data/NExT-QA/qas_bert \
---csv_dataset_path /home/ubuntu/11777-videoQA//next-dataset \
+--csv_dataset_path /home/ubuntu/11777-videoQA/next-dataset \
 --batch_size 512 \
---lr 5e-5 \
+--clip_frames 16 \
+--lr 1e-5 \
 --use_text_cands \
---text_clip \
 --num_workers 4
 
 # eval "$(conda shell.bash hook)"

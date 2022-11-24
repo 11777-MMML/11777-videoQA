@@ -18,6 +18,8 @@ import torch
 from torch import nn
 from torch.utils.data.dataloader import default_collate
 from torch.utils.tensorboard import SummaryWriter
+from NExTQA import TYPE_MAP
+from discord import SyncWebhook
 
 ANS_CANDS = ("a0", "a1", "a2", "a3", "a4")
 
@@ -41,7 +43,7 @@ def process_batch(batch, set_to_device=None, replace_empty_with_none=False):
     return batch
 
 def process_video_text_features(batch, tokenizer, model, device, model_type="clip", visual_projector=None, text_projector=None, use_q_cands=False):
-    sampled_video_feature, qa_feats, label = batch
+    sampled_video_feature, qa_feats, label, q_type = batch
     cand_feats = []
     for key in ANS_CANDS:
         bs = len(batch)
@@ -55,7 +57,7 @@ def process_video_text_features(batch, tokenizer, model, device, model_type="cli
             cand_feat = model(**cand_feat).last_hidden_state[:, 0] # .pooler_output#
         cand_feats.append(cand_feat.unsqueeze(1))
     ans_feats = torch.concat(cand_feats, dim=1)
-    batch = (sampled_video_feature, ans_feats, label)
+    batch = (sampled_video_feature, ans_feats, label, q_type)
     return batch
 
 class TextModel(nn.Module):
@@ -87,30 +89,40 @@ class TextModel(nn.Module):
 def main(args):
     writer = SummaryWriter()
     seed_everything(args.seed)
+    webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
     config = Config.from_args(args)
     device = torch.device("cuda:0" if args.gpus > 0 else "cpu")
     frame_qa_model = FrameQAReasonModel(config).to(device)
+    train_text_embeddings = False
     if args.text_clip:
-        clip_tokenizer = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
-        clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
-        clip_model.eval()
 
         visual_projector = None
         
-        bert_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-        bert_model = BertModel.from_pretrained("bert-base-uncased").to(device)
-        bert_model.eval()
         
-        model_type = "clip"
+        
+        model_type = "common"
+        train_text_embeddings = False
         if model_type == "bert":
+            bert_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+            bert_model = BertModel.from_pretrained("bert-base-uncased").to(device)
             tokenizer = bert_tokenizer
             text_model = bert_model
+            bert_model.eval()
             text_projector = None
         elif model_type == "clip":
+            clip_tokenizer = CLIPProcessor.from_pretrained("openai/clip-vit-base-patch32")
+            clip_model = CLIPModel.from_pretrained("openai/clip-vit-base-patch32").to(device)
+            clip_model.eval()
             tokenizer = clip_tokenizer
             text_model = clip_model
             text_projector = None
-        train_text_embeddings = False
+        elif model_type == "common":
+            cqa_tokenizer = RobertaTokenizer.from_pretrained("LIAMF-USP/aristo-roberta")
+            cqa_model = RobertaForMultipleChoice.from_pretrained("LIAMF-USP/aristo-roberta")
+            tokenizer = cqa_tokenizer
+            text_model = cqa_model
+            train_text_embeddings = True
+        
 
     # create datasets and dataloaders
     dset_train = NExTQA.NextQADataset(args, split="train")
@@ -153,22 +165,30 @@ def main(args):
                         batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
 
             batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)
-            x_vis_seq, x_txt_qa, y_gt = batch
+            x_vis_seq, x_txt_qa, y_gt, q_type = batch
             # refactored the "forward pass" here into an example code snippet in atp.py; feel free to modify/replace here!
-            logits = frame_qa_model(x_vis_seq, x_txt_qa)
-            y_pred = logits.permute(1, 0, 2).squeeze()
+            y_pred = frame_qa_model(x_vis_seq, x_txt_qa)
+            # y_pred = logits.permute(1, 0, 2).squeeze()
+            # print(y_pred.shape)
             loss = F.cross_entropy(y_pred, y_gt)
             accs = (y_pred.argmax(dim=-1) == y_gt).float()
 
+            d_accs = accs[q_type == TYPE_MAP["D"]]
+            c_accs = accs[q_type == TYPE_MAP["C"]]
+            t_accs = accs[q_type == TYPE_MAP["T"]]
+
             frame_qa_model.zero_grad(set_to_none=True)
-            if args.text_clip:
+            if train_text_embeddings:
                 text_model.zero_grad()
             loss.backward()
 
             # do logging stuff with accs, selected_frames, masks, etc. For example:
-            log(f"train: epoch{epoch_i}, iter{i}: loss = {loss.item()}, acc = {accs.mean().item()}")
+            log(f"train: epoch{epoch_i}, iter{i}: loss = {loss.item()}, acc = {accs.mean().item()}, d_acc = {d_accs.mean().item()}, c_acc = {c_accs.mean().item()}, t_acc = {t_accs.mean().item()}")
             writer.add_scalar("Loss/train", loss.item(), count)
             writer.add_scalar("Accu/train", accs.mean().item(), count)
+            writer.add_scalar("d_Accu/train", d_accs.mean().item(), count)
+            writer.add_scalar("t_Accu/train", t_accs.mean().item(), count)
+            writer.add_scalar("c_Accu/train", c_accs.mean().item(), count)
             
             if args.grad_clip_val > 0.0:
                 nn.utils.clip_grad_norm_(parameters, args.grad_clip_val)
@@ -179,20 +199,33 @@ def main(args):
         # val epoch
         frame_qa_model.eval()
         all_val_accs = []
+        all_val_types = []
         for i, batch in enumerate(dldr_val):
             with torch.no_grad():
                 if args.text_clip:
                     text_model.eval()
                     batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
                 batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)                
-                x_vis_seq, x_txt_qa, y_gt = batch
-                logits = frame_qa_model(x_vis_seq, x_txt_qa)
-                y_pred = logits.permute(1, 0, 2).squeeze()
+                x_vis_seq, x_txt_qa, y_gt, q_types = batch
+                y_pred = frame_qa_model(x_vis_seq, x_txt_qa)
+                # y_pred = logits.permute(1, 0, 2).squeeze()
                 accs = (y_pred.argmax(dim=-1) == y_gt).float()
                 all_val_accs.append(accs)
-        overall_acc = torch.cat(all_val_accs).mean().item()
-        log(f"val: epoch{epoch_i}: overall_acc = {overall_acc}")
+                all_val_types.append(q_types)
+
+        all_val_accs = torch.cat(all_val_accs) 
+        all_val_types = torch.cat(all_val_types)
+        overall_acc = all_val_accs.mean().item()
+        d_acc = all_val_accs[all_val_types == TYPE_MAP["D"]].mean().item()
+        t_acc = all_val_accs[all_val_types == TYPE_MAP["T"]].mean().item()
+        c_acc = all_val_accs[all_val_types == TYPE_MAP["C"]].mean().item()
+        log(f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}")
+        msg = f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}"
+        webhook.send(msg)
         writer.add_scalar("Accu/val", overall_acc, epoch_i)
+        writer.add_scalar("d_Accu/val", d_acc, epoch_i)
+        writer.add_scalar("t_Accu/val", t_acc, epoch_i)
+        writer.add_scalar("c_Accu/val", c_acc, epoch_i)
 
         if overall_acc > best:
             best = overall_acc
