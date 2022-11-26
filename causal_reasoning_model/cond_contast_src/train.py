@@ -18,10 +18,10 @@ import torch
 from torch import nn
 from torch.utils.data.dataloader import default_collate
 from torch.utils.tensorboard import SummaryWriter
-from NExTQA import TYPE_MAP
+from NExTQA import TYPE_MAP, A_CHOICES
 from discord import SyncWebhook
 
-ANS_CANDS = ("a0", "a1", "a2", "a3", "a4")
+ANS_CANDS = ["question", "a0", "a1", "a2", "a3", "a4"] #+ [f"{choice}_cand{k}" for choice in A_CHOICES for k in range(5)]
 
 def log(message, logger=None):
     """
@@ -93,6 +93,7 @@ def main(args):
     config = Config.from_args(args)
     device = torch.device("cuda:0" if args.gpus > 0 else "cpu")
     frame_qa_model = FrameQAReasonModel(config).to(device)
+    margin_loss = nn.TripletMarginLoss()
     train_text_embeddings = False
     if args.text_clip:
 
@@ -100,7 +101,7 @@ def main(args):
         
         
         
-        model_type = "common"
+        model_type = "clip"
         train_text_embeddings = False
         if model_type == "bert":
             bert_tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
@@ -167,10 +168,31 @@ def main(args):
             batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)
             x_vis_seq, x_txt_qa, y_gt, q_type = batch
             # refactored the "forward pass" here into an example code snippet in atp.py; feel free to modify/replace here!
-            y_pred = frame_qa_model(x_vis_seq, x_txt_qa)
-            # y_pred = logits.permute(1, 0, 2).squeeze()
-            # print(y_pred.shape)
-            loss = F.cross_entropy(y_pred, y_gt)
+            y_pred, x_question, x_ans, x_cands = frame_qa_model(x_vis_seq, x_txt_qa)
+
+            x_ans = x_ans.permute(1, 0, 2)
+            # x_cands = x_cands.permute(1, 0, 2)
+            x_question = x_question.permute(1, 0, 2)
+            y_pred = y_pred.transpose(0, 1)
+
+
+            # gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
+            # cand_mask = torch.repeat_interleave(gt_mask, config.n_answers, dim=1)
+
+            # positives = torch.cat((x_ans[gt_mask].reshape(len(batch), -1, config.d_model_ff), x_cands[cand_mask].reshape(len(batch), -1, config.d_model_ff)), dim = 1)
+            # negatives = torch.cat((x_ans[~gt_mask].reshape(len(batch), -1, config.d_model_ff), x_cands[~cand_mask].reshape(len(batch), -1, config.d_model_ff)), dim=1) # N * L * dim
+
+            # perm = torch.randperm(negatives.size(1))
+            # idx = perm[:positives.size(1)]
+            # negatives = negatives[:, idx, :]
+
+            # anchor = x_question
+            
+            ce_loss = F.cross_entropy(y_pred, y_gt)
+            # triplet_loss = margin_loss(anchor, positives, negatives)
+
+            loss = ce_loss #+ triplet_loss
+
             accs = (y_pred.argmax(dim=-1) == y_gt).float()
 
             d_accs = accs[q_type == TYPE_MAP["D"]]
@@ -183,7 +205,7 @@ def main(args):
             loss.backward()
 
             # do logging stuff with accs, selected_frames, masks, etc. For example:
-            log(f"train: epoch{epoch_i}, iter{i}: loss = {loss.item()}, acc = {accs.mean().item()}, d_acc = {d_accs.mean().item()}, c_acc = {c_accs.mean().item()}, t_acc = {t_accs.mean().item()}")
+            log(f"train: epoch{epoch_i}, iter{i}: loss = {loss.item()}, ce_loss = {ce_loss.item()}, triplet_loss = {ce_loss.item()}, acc = {accs.mean().item()}, d_acc = {d_accs.mean().item()}, c_acc = {c_accs.mean().item()}, t_acc = {t_accs.mean().item()}")
             writer.add_scalar("Loss/train", loss.item(), count)
             writer.add_scalar("Accu/train", accs.mean().item(), count)
             writer.add_scalar("d_Accu/train", d_accs.mean().item(), count)
@@ -207,8 +229,10 @@ def main(args):
                     batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
                 batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)                
                 x_vis_seq, x_txt_qa, y_gt, q_types = batch
-                y_pred = frame_qa_model(x_vis_seq, x_txt_qa)
+                y_pred, _, _, _ = frame_qa_model(x_vis_seq, x_txt_qa)
                 # y_pred = logits.permute(1, 0, 2).squeeze()
+                y_pred = y_pred.transpose(0, 1)
+                
                 accs = (y_pred.argmax(dim=-1) == y_gt).float()
                 all_val_accs.append(accs)
                 all_val_types.append(q_types)
@@ -260,7 +284,8 @@ if __name__ == "__main__":
     parser.add_argument('--text_clip', action='store_true')
     parser.add_argument('--no-text_clip', dest='text_clip', action='store_false')
     parser.add_argument('--n_heads', default=2, type=int, help="see ATPConfig")
-    parser.add_argument('--n_cands', default=5, type=int, help="see ATPConfig")
+    parser.add_argument('--n_cands', default=25, type=int, help="see ATPConfig")
+    parser.add_argument('--n_answers', default=5, type=int, help="see ATPConfig")
     parser.add_argument('--d_model', default=128, type=int, help="see ATPConfig")
     parser.add_argument('--d_model_ff', default=128, type=int, help="see ATPConfig")
     parser.add_argument('--enc_dropout', default=0.1, type=float, help="see ATPConfig")

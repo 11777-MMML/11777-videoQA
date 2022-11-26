@@ -5,6 +5,7 @@ import torch
 from torch.utils import data
 
 TYPE_MAP = {"T": 0, "C": 1, "D": 2}
+A_CHOICES = ["a0", "a1", "a2", "a3", "a4"]
 
 class NextQADataset(data.Dataset):
     '''
@@ -88,7 +89,8 @@ class NextQADataset(data.Dataset):
         label = example['answer']
         q = question
         if self.text_clip:
-            q_ans = {"a0": q + "? </s></s> " + a0, "a1": q + "? </s></s> " + a1, "a2": q + "? </s></s> " + a2, "a3": q + "? </s></s> " + a3, "a4": q + "? </s></s> " + a4, "caption": example["caption"]}
+            q_ans = {"a0":  a0, "a1":  a1, "a2":  a2, "a3":  a3, "a4":  a4, "question": q}
+            q_ans.update({f"{choice}_cand{k}": example[f"{choice}_cand{k}"] for choice in A_CHOICES for k in range(5)})
             ret = (video_feature, q_ans, label, q_type)
         else:
             ret = (video_feature, text_feature, label, q_type)
