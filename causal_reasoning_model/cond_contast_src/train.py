@@ -167,6 +167,7 @@ def main(args):
 
             batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)
             x_vis_seq, x_txt_qa, y_gt, q_type = batch
+            batch_size, _, _ = x_vis_seq.shape
             # refactored the "forward pass" here into an example code snippet in atp.py; feel free to modify/replace here!
             y_pred, x_question, x_ans, x_cands = frame_qa_model(x_vis_seq, x_txt_qa)
 
@@ -176,20 +177,31 @@ def main(args):
             y_pred = y_pred.transpose(0, 1)
 
 
-            # gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
+            gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
             # cand_mask = torch.repeat_interleave(gt_mask, config.n_answers, dim=1)
 
-            # positives = torch.cat((x_ans[gt_mask].reshape(len(batch), -1, config.d_model_ff), x_cands[cand_mask].reshape(len(batch), -1, config.d_model_ff)), dim = 1)
-            # negatives = torch.cat((x_ans[~gt_mask].reshape(len(batch), -1, config.d_model_ff), x_cands[~cand_mask].reshape(len(batch), -1, config.d_model_ff)), dim=1) # N * L * dim
+            positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
+            negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
 
             # perm = torch.randperm(negatives.size(1))
-            # idx = perm[:positives.size(1)]
+            # perm = torch.arange(negatives.size(1)).expand(batch_size, -1)
+            # perm = perm[:,torch.randperm(perm.size()[1])]
+            # print(perm)
+            # idx = torch.randint(low=0, high=negatives.size(1), size=(batch_size,1,1)).expand(-1,-1,config.d_model_ff).to(device)
+            
+            # print(perm[:, :positives.size(1)].shape)
+            # negatives = negatives.gather(1, idx)
             # negatives = negatives[:, idx, :]
 
-            # anchor = x_question
+            anchor = x_question
             
-            ce_loss = F.cross_entropy(y_pred, y_gt)
-            # triplet_loss = margin_loss(anchor, positives, negatives)
+            # ce_loss = F.cross_entropy(y_pred, y_gt)
+            ce_loss = None
+            for idx in range(negatives.size(1)):
+                if ce_loss is None:
+                    ce_loss = margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
+                else:
+                    ce_loss = ce_loss + margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
 
             loss = ce_loss #+ triplet_loss
 

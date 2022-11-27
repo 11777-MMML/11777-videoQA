@@ -89,12 +89,20 @@ class FrameQAReasonLayer(nn.Module):
         # self.vision_text_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
         # self.text_vision_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
 
+        self.vision_pre_norm = nn.LayerNorm(self.d_model)
+        self.question_pre_norm = nn.LayerNorm(self.d_model)
+        self.answer_pre_norm = nn.LayerNorm(self.d_model)
+
         self.vision_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
         self.question_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
         self.answer_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
 
     def forward(self, x):
         vision_inputs, question_inputs, answer_inputs = x
+
+        vision_inputs = self.vision_pre_norm(vision_inputs)
+        question_inputs = self.question_pre_norm(question_inputs)
+        answer_inputs = self.answer_pre_norm(answer_inputs)
         
         # q_input = qa_inputs[0].unsqueeze(0)
         # a_inputs = qa_inputs[1:]
@@ -167,19 +175,29 @@ class FrameQAReasonModel(nn.Module):
                 x_txt_qa: torch.tensor,
                 **kwargs):      
         N, L, D = x_vis_seq.size()  # (batch_size, sequence_length, feature_dimension)
-        # class_ids = [ModalityEmbeddingsID.VISUAL_EMBEDDING] * L
         x_vis_seq = x_vis_seq.permute(1, 0, 2)    # make (L, N, D); sequence first
 
 
         x_vis_seq = self.frame_projection(x_vis_seq) 
-        # x_vis_seq = self.video_temporal_encoder(x_vis_seq)
+        x_vis_seq = self.video_temporal_encoder(x_vis_seq)
+        vision_cls_ids = [ModalityEmbeddingsID.VISUAL_EMBEDDING] * L
+        vision_cls_ids = torch.tensor(vision_cls_ids, dtype=torch.long, device=x_vis_seq.device).unsqueeze(-1)
+        x_vis_seq = x_vis_seq + self.modality_embedding_layer(vision_cls_ids)
+
    
 
         x_txt_qa = x_txt_qa.permute(1, 0, 2) 
         x_txt_qa = self.qa_projection(x_txt_qa) # quesiton, 5 answers, 25 candidates 
 
         x_question = x_txt_qa[0].unsqueeze(0)
+        question_cls_ids = [ModalityEmbeddingsID.TEXT_EMBEDDING_Q]
+        question_cls_ids = torch.tensor(question_cls_ids, dtype=torch.long, device=x_question.device).unsqueeze(-1)
+        x_question = x_question + self.modality_embedding_layer(question_cls_ids)
+
         x_ans = x_txt_qa[1:]
+        answer_cls_ids = [ModalityEmbeddingsID.TEXT_EMBEDDING_A]*self.config.n_answers
+        answer_cls_ids = torch.tensor(answer_cls_ids, dtype=torch.long, device=x_ans.device).unsqueeze(-1)
+        x_ans = x_ans + self.modality_embedding_layer(answer_cls_ids)
 
         # x_vis_ans = torch.cat((x_vis_seq, x_ans), dim = 0)
 
@@ -217,7 +235,7 @@ class FrameQAReasonModel(nn.Module):
 
         # visual_rep, scores = self.logits(x_txt_qa[0].unsqueeze(0), x_vis_seq, x_vis_seq)
         # text_rep, scores = self.logits(x_vis_seq, x_txt_qa, x_txt_qa)
-        logits = F.cosine_similarity(x_question, x_ans,dim=-1)
+        logits = F.cosine_similarity(x_question, x_ans, dim=-1)
         # logits = self.logits(x_ans)
         # print(logits.shape)
         # logits = logits.squeeze()#.transpose(0,1)
