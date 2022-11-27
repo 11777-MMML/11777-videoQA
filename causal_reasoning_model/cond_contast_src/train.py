@@ -19,7 +19,7 @@ from torch import nn
 from torch.utils.data.dataloader import default_collate
 from torch.utils.tensorboard import SummaryWriter
 from NExTQA import TYPE_MAP, A_CHOICES
-from discord import SyncWebhook
+# from discord import SyncWebhook
 
 ANS_CANDS = ["question", "a0", "a1", "a2", "a3", "a4"] #+ [f"{choice}_cand{k}" for choice in A_CHOICES for k in range(5)]
 
@@ -89,11 +89,12 @@ class TextModel(nn.Module):
 def main(args):
     writer = SummaryWriter()
     seed_everything(args.seed)
-    webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
+    # webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
     config = Config.from_args(args)
     device = torch.device("cuda:0" if args.gpus > 0 else "cpu")
     frame_qa_model = FrameQAReasonModel(config).to(device)
     margin_loss = nn.TripletMarginLoss()
+    cross_entropy = nn.CrossEntropyLoss()
     train_text_embeddings = False
     if args.text_clip:
 
@@ -177,11 +178,11 @@ def main(args):
             y_pred = y_pred.transpose(0, 1)
 
 
-            gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
+            # gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
             # cand_mask = torch.repeat_interleave(gt_mask, config.n_answers, dim=1)
 
-            positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
-            negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
+            # positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
+            # negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
 
             # perm = torch.randperm(negatives.size(1))
             # perm = torch.arange(negatives.size(1)).expand(batch_size, -1)
@@ -193,15 +194,17 @@ def main(args):
             # negatives = negatives.gather(1, idx)
             # negatives = negatives[:, idx, :]
 
-            anchor = x_question
+            # anchor = x_question
             
             # ce_loss = F.cross_entropy(y_pred, y_gt)
-            ce_loss = None
-            for idx in range(negatives.size(1)):
-                if ce_loss is None:
-                    ce_loss = margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
-                else:
-                    ce_loss = ce_loss + margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
+            # ce_loss = None
+            # for idx in range(negatives.size(1)):
+            #     if ce_loss is None:
+            #         ce_loss = margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
+            #     else:
+            #         ce_loss = ce_loss + margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
+
+            ce_loss = cross_entropy(y_pred, y_gt)
 
             loss = ce_loss #+ triplet_loss
 
@@ -257,7 +260,7 @@ def main(args):
         c_acc = all_val_accs[all_val_types == TYPE_MAP["C"]].mean().item()
         log(f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}")
         msg = f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}"
-        webhook.send(msg)
+        # webhook.send(msg)
         writer.add_scalar("Accu/val", overall_acc, epoch_i)
         writer.add_scalar("d_Accu/val", d_acc, epoch_i)
         writer.add_scalar("t_Accu/val", t_acc, epoch_i)
