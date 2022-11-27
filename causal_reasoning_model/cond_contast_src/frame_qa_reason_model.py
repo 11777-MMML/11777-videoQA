@@ -100,9 +100,9 @@ class FrameQAReasonLayer(nn.Module):
     def forward(self, x):
         vision_inputs, question_inputs, answer_inputs = x
 
-        vision_inputs = self.vision_pre_norm(vision_inputs)
-        question_inputs = self.question_pre_norm(question_inputs)
-        answer_inputs = self.answer_pre_norm(answer_inputs)
+        # vision_inputs = self.vision_pre_norm(vision_inputs)
+        # question_inputs = self.question_pre_norm(question_inputs)
+        # answer_inputs = self.answer_pre_norm(answer_inputs)
         
         # q_input = qa_inputs[0].unsqueeze(0)
         # a_inputs = qa_inputs[1:]
