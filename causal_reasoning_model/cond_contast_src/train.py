@@ -178,11 +178,11 @@ def main(args):
             y_pred = y_pred.transpose(0, 1)
 
 
-            gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
+            # gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
             # cand_mask = torch.repeat_interleave(gt_mask, config.n_answers, dim=1)
 
-            positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
-            negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
+            # positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
+            # negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
 
             # perm = torch.randperm(negatives.size(1))
             # perm = torch.arange(negatives.size(1)).expand(batch_size, -1)
