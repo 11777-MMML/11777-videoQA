@@ -1,5 +1,6 @@
 import torch
 from torch import nn
+import torch.nn.functional as F
 from torchvision import transforms as T
 from transformers import AutoFeatureExtractor, ViTMAEModel
 from transformers.models.vit.feature_extraction_vit import ViTFeatureExtractor
@@ -12,6 +13,13 @@ RESNET_LAYERS = [34, 50, 101, 152]
 MAE_CHECKPOINT = 'facebook/vit-mae-base'
 
 class ModelConfig:
+    def __init__(self):
+        self.d_model = 768
+        self.n_head = 8
+        self.activation = 'gelu'
+        self.n_layers = 1
+
+class PredictionConfig:
     def __init__(self):
         self.d_model = 768
         self.n_head = 8
@@ -44,6 +52,25 @@ class TransformerModel(nn.Module):
         out = self.transformer(input)
 
         return out
+    
+class PredictionModel(nn.Module):
+    def __init__(self, config: PredictionConfig) -> None:
+        super().__init__()
+
+        self.transformer = TransformerModel(config=config)
+    
+    def forward(self, frames, question, candidates):
+        num_frames = len(frames)
+        len_question = len(question)
+        len_candidates = len(candidates)
+
+        rep = torch.cat(frames, question, candidates)
+
+        out = self.transformer(rep)
+        out_q = out[num_frames + 1]
+        out_candidates = out[-len_candidates]
+
+        return F.cosine_similarity(out_q, out_candidates)
 
 class FrameEmbedder(nn.Module):
     def __init__(self, model_name: str, **kwargs):
