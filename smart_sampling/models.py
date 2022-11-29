@@ -1,4 +1,5 @@
 import torch
+from typing import Union
 from torch import nn
 import torch.nn.functional as F
 from torchvision import transforms as T
@@ -12,12 +13,13 @@ RESNET_LAYERS = [34, 50, 101, 152]
 # Taken from: https://huggingface.co/docs/transformers/model_doc/vit_mae#transformers.ViTMAEModel
 MAE_CHECKPOINT = 'facebook/vit-mae-base'
 
-class ModelConfig:
+class StateConfig:
     def __init__(self):
         self.d_model = 768
         self.n_head = 8
         self.activation = 'gelu'
         self.n_layers = 1
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class PredictionConfig:
     def __init__(self):
@@ -25,7 +27,7 @@ class PredictionConfig:
         self.n_head = 8
         self.activation = 'gelu'
         self.n_layers = 1
-
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 class SequenceModel(nn.Module):
     def __init__(self):
@@ -35,7 +37,7 @@ class SequenceModel(nn.Module):
         raise NotImplementedError()
 
 class TransformerModel(nn.Module):
-    def __init__(self, config: ModelConfig):
+    def __init__(self, config: Union[StateConfig, PredictionConfig]):
         super(TransformerModel, self).__init__()
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=config.d_model,
@@ -47,8 +49,25 @@ class TransformerModel(nn.Module):
             encoder_layer=encoder_layer,
             num_layers=config.n_layers,
         )
+
+        self.device = config.device
     
     def forward(self, input):
+        input = input.to(self.device)
+        
+        out = self.transformer(input)
+
+        return out
+
+class StateModel(nn.Module):
+    def __init__(self, config: StateConfig) -> None:
+        super().__init__()
+
+        self.transformer = TransformerModel(config=config)
+        self.device = config.device
+    
+    def forward(self, input):
+        input = torch.concat(input)
         out = self.transformer(input)
 
         return out
@@ -58,17 +77,20 @@ class PredictionModel(nn.Module):
         super().__init__()
 
         self.transformer = TransformerModel(config=config)
+        self.device = config.device
     
     def forward(self, frames, question, candidates):
         num_frames = len(frames)
         len_question = len(question)
         len_candidates = len(candidates)
 
-        rep = torch.cat(frames, question, candidates)
+        rep = torch.cat(frames + question + candidates)
 
+        rep = rep.to(self.device)
         out = self.transformer(rep)
         out_q = out[num_frames + 1]
-        out_candidates = out[-len_candidates]
+        out_candidates = out[-len_candidates:]
+        print(out_q.shape, out_candidates.shape)
 
         return F.cosine_similarity(out_q, out_candidates)
 

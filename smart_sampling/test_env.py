@@ -1,11 +1,14 @@
+import torch
 from env import FrameEnvironment
 from NExTQA import FrameLoader
-from models import ModelConfig, TransformerModel, PredictionConfig, PredictionModel
+from models import StateConfig, StateModel, PredictionConfig, PredictionModel
 
-model_config = ModelConfig()
+torch.manual_seed(1)
+
+model_config = StateConfig()
 prediction_config = PredictionConfig()
 
-state_model = TransformerModel(model_config)
+state_model = StateModel(model_config)
 prediction_model = PredictionModel(prediction_config)
 
 dataset = FrameLoader()
@@ -19,13 +22,14 @@ env = FrameEnvironment(
 )
 
 start_state = env.reset()
-print(start_state)
+print("start state:", start_state.shape)
 next_state, reward, done, _ = env.step(0)
-print(next_state)
+print("next state:", next_state)
 
 count = 0
 while not done:
     action = count % 2
-    count += 1
     next_state, reward, done, _ = env.step(action)
+    print(f"trajectory {count}: {next_state.shape}, {reward}, {done}")
+    count += 1
 

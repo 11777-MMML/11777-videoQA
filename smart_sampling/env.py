@@ -7,7 +7,7 @@ BERT_CHECKPOINT = "distilbert-base-uncased"
 
 class FrameEnvironment(Env):
     def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float):
-        self(FrameEnvironment, self).__init__()
+        super().__init__()
 
         # Add state to buffer
         self.action_space = spaces.Discrete(2)
@@ -16,7 +16,7 @@ class FrameEnvironment(Env):
         self.embedding_dim = embedding_dim
 
         # Give aggregation of previous frames back
-        self.observation_space = spaces.Box(embedding_dim)
+        self.observation_space = spaces.Box(embedding_dim, high=float('nan'))
     
         # Source of Frames
         self.dataset = dataset
@@ -54,11 +54,21 @@ class FrameEnvironment(Env):
         self.state_model.to(self._device)
         self.prediction_model.to(self._device)
         self._language_model.to(self._device)
+    
+    def get_representation_from_lm(self, text_input):
+        with no_grad():
+            inputs = self._tokenizer(text_input, return_tensors="pt").to(self._device)
+            outputs = self._language_model(**inputs)
+            rep = outputs.last_hidden_state
+            rep = rep.squeeze()
+            rep = rep.detach().cpu()
+
+        return rep[0]
 
     def reset(self):
         low = 0
         high = len(self.dataset)
-        index = randint(low=low, high=high)
+        index = randint(low=low, high=high, size=(1,)).item()
 
         example = self.dataset[index]
 
@@ -83,17 +93,16 @@ class FrameEnvironment(Env):
         self._curr_step = 0
         self._max_step = len(self._frames)
 
-        with no_grad():
-            inputs = self._tokenizer(question, return_tensors="pt").to(self._device)
-            question_rep = self._language_model(**inputs)
-            question_rep = question_rep.squeeze()
-            question_rep = question_rep.detach().cpu()
+        question_rep = self.get_representation_from_lm(question)
+        question_rep = question_rep.unsqueeze(0)
 
-            # Take CLS Token
-            self._buffer = [question_rep[0]]
+        # Take CLS Token
+        self._buffer = [question_rep]
 
+        # First decision should look at the first frame
         self._curr_obs = self._frames[self._curr_step]
-        rep = self.state_model(self._buffer[0])
+        temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
+        rep = self.state_model(self._buffer)
         return rep
 
     # def _reward(self, state_input: Tensor, curr_step: int) -> float32:
@@ -109,23 +118,17 @@ class FrameEnvironment(Env):
     #     # The higher this value, less is the reward
     #     return -reward
     
-    def _sparse_reward(self, state_input: Tensor) -> float32:
+    def _sparse_reward(self) -> float32:
 
-        with no_grad():
-            inputs = self._tokenizer(self._question, return_tensors="pt").to(self._device)
-            question_rep = self._language_model(**inputs)
-            question_rep = question_rep.squeeze()
-            question_rep = question_rep.detach().cpu()
-            question_rep = question_rep[0]
+        question_rep = self.get_representation_from_lm(self._question)
+        question_rep = question_rep.unsqueeze(0)
 
-            candidates = []
+        candidates = []
 
-            for candidate in self._candidates:
-                inputs = self._tokenizer(candidate, return_tensors="pt").to(self._device)
-                candidate_rep = self._language_model(**inputs)
-                candidate_rep = candidate_rep.squeeze()
-                candidate_rep = candidate_rep[0]
-                candidates.append = candidate_rep.detach().cpu()
+        for candidate in self._candidates:
+            candidate_rep = self.get_representation_from_lm(candidate)
+            candidate_rep = candidate_rep.unsqueeze(0)
+            candidates.append(candidate_rep)
         
         logits = self.prediction_model(self._buffer, [question_rep], candidates)
 
@@ -138,21 +141,17 @@ class FrameEnvironment(Env):
 
         return -penalty
     
-    def _dense_reward(self, state_input:Tensor, curr_step: int) -> float32:
+    def _dense_reward(self, curr_step: int) -> float32:
         return 0
     
     def step(self, action):
         # If the frame is selected
         if action > 0:
-            self._buffer.append(self._curr_obs.unsqueeze())
+            self._buffer.append(self._curr_obs.unsqueeze(0))
 
-        # Find the latest representation
-        temp_buffer = self._buffer + [self._curr_obs]
-        state_input = concat(tensors=temp_buffer, dim=0)
-        rep = self.model(state_input)
-
+        
         # calculate the reward
-        reward = self._dense_reward(state_input, self._curr_step)
+        reward = self._dense_reward(self._curr_step)
 
         # Go to the next frame
         self._curr_step += 1
@@ -160,9 +159,13 @@ class FrameEnvironment(Env):
         done = False
         if self._curr_step == self._max_step:
             done = True
-            reward += self._sparse_reward(state_input)
+            reward += self._sparse_reward()
+            rep = self.state_model(self._buffer)
         else:
-            self._curr_obs = self._frame[self._curr_step]
+            # For the nth step look at n + 1 frames
+            self._curr_obs = self._frames[self._curr_step]
+            temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
+            rep = self.state_model(temp_buffer)
 
         # TODO: Add infos for debugging
         return rep, reward, done, {}
