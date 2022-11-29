@@ -178,5 +178,4 @@ class Agent(nn.Module):
         self.policy_network = self.policy_network.to(self.device)
         
     def forward(self, input_obs):
-        input_obs = torch.sum(input_obs, dim=0)
         return self.policy_network(input_obs)
