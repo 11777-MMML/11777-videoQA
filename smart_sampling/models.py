@@ -29,6 +29,14 @@ class PredictionConfig:
         self.n_layers = 1
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+class AgentConfig:
+    def __init__(self):
+        self.num_layers=2 
+        self.input_dim=768 
+        self.hidden_dim=512 
+        self.activation=torch.nn.LeakyReLU()
+        self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 class SequenceModel(nn.Module):
     def __init__(self):
         raise NotImplementedError()
@@ -144,25 +152,31 @@ class FrameEmbedder(nn.Module):
         return last_hidden_state
 
 class Agent(nn.Module):
-    def __init__(self, num_layers, input_dim, hidden_dim, activation):
+    def __init__(self, config: AgentConfig):
+        super().__init__()
         # Policy Network
-        self.num_layers = num_layers
+        self.num_layers = config.num_layers
+        input_dim =  config.input_dim
         self.input_dim = input_dim
-        self.hidden_dim = hidden_dim
+        self.hidden_dim = config.hidden_dim
+        self.device = config.device
         self.out_dim = 2
         layers = []
 
         # Define all but one
-        for _ in range(num_layers - 1):
-            layer = nn.Linear(in_features=input_dim, out_features=hidden_dim, bias=True)
-            input_dim = hidden_dim
-            layers.append(layer, activation)
+        for _ in range(config.num_layers - 1):
+            layer = nn.Linear(in_features=input_dim, out_features=config.hidden_dim, bias=True)
+            input_dim = config.hidden_dim
+            layers.append(layer)
+            layers.append(config.activation)
         
         # This model outputs logits
         layer = nn.Linear(in_features=input_dim, out_features=self.out_dim)
         layers.append(layer)
 
         self.policy_network = nn.Sequential(*layers)
+        self.policy_network = self.policy_network.to(self.device)
         
     def forward(self, input_obs):
+        input_obs = torch.sum(input_obs, dim=0)
         return self.policy_network(input_obs)
