@@ -102,7 +102,7 @@ class FrameEnvironment(Env):
         # First decision should look at the first frame
         self._curr_obs = self._frames[self._curr_step]
         temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
-        rep = self.state_model(self._buffer)
+        rep = self.state_model(temp_buffer)
         return rep[-1]
 
     # def _reward(self, state_input: Tensor, curr_step: int) -> float32:
