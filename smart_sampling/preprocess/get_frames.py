@@ -59,7 +59,7 @@ class VideoLoader(Dataset):
         
         output_file = video_path.strip()
         output_file = output_file.strip(".mp4")
-        output_file = output_file.replace("videos", "mae_features") + ".pt"
+        output_file = ".." + output_file.replace("videos", "vit_features") + ".pt"
 
         video = th.zeros(1)
 
@@ -108,20 +108,34 @@ if __name__ == '__main__':
     dataset.model.eval()
     
     dataloader = DataLoader(dataset, batch_size=1, shuffle=False)
+    with th.no_grad():
+        try:
+            for batch in tqdm(dataloader):
+                video = batch['video']
+                video_file = batch['video_file']
+                output_file = batch['output_file']
 
-    for batch in tqdm(dataloader):
-        video = batch['video']
-        video_file = batch['video_file']
-        output_file = batch['output_file']
-        
-        video = video.squeeze()
-        
-        video = video.split(dim=0, split_size=1)
-        video = [v.squeeze() for v in video]
+                # Skip processes files
+                if os.path.exists(output_file[0]):
+                    continue
+                
+                video = video.squeeze()
+                
+                # Account for single frame videos
+                if len(video.shape) > 3:
+                    video = video.split(dim=0, split_size=1)
+                    video = [v.squeeze() for v in video]
+                
+                inputs = dataset.feature_extractor(video, return_tensors="pt")
+                inputs = inputs.to(device)
+                outputs = dataset.model(**inputs)
 
-        inputs = dataset.feature_extractor(video, return_tensors="pt")
-        inputs = inputs.to(device)
-        outputs = dataset.model(**inputs)
-
-        with open(output_file[0], "wb") as f:
-            pickle.dump(outputs.pooler_output.detach().cpu(), f)
+                with open(output_file[0], "wb") as f:
+                    pickle.dump(outputs.pooler_output.detach().cpu(), f)
+                
+                del outputs
+                del inputs
+        except Exception as e:
+            print(e)
+            import pdb
+            pdb.set_trace()
