@@ -11,6 +11,14 @@ RESNET_LAYERS = [34, 50, 101, 152]
 # Taken from: https://huggingface.co/docs/transformers/model_doc/vit_mae#transformers.ViTMAEModel
 MAE_CHECKPOINT = 'facebook/vit-mae-base'
 
+class ModelConfig:
+    def __init__(self):
+        self.d_model = 768
+        self.n_head = 8
+        self.activation = 'gelu'
+        self.n_layers = 1
+
+
 class SequenceModel(nn.Module):
     def __init__(self):
         raise NotImplementedError()
@@ -19,32 +27,21 @@ class SequenceModel(nn.Module):
         raise NotImplementedError()
 
 class TransformerModel(nn.Module):
-    def __init__(self, max_seq_len=64, input_dim=768, num_heads=3, num_layers=3, activation='gelu'):
+    def __init__(self, config: ModelConfig):
         super(TransformerModel, self).__init__()
-        decoder_layer = nn.TransformerDecoderLayer(
-            d_model=input_dim,
-            nhead=num_heads,
-            activation=activation,
-            batch_first=True
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=config.d_model,
+            nhead=config.n_head,
+            activation=config.activation
         )
 
-        self.decoder = nn.TransformerDecoder(
-            decoder_layer=decoder_layer,
-            num_layers=num_layers
+        self.transformer = nn.TransformerEncoder(
+            encoder_layer=encoder_layer,
+            num_layers=config.n_layers,
         )
-
-        self.max_seq_len = max_seq_len
     
-    def forward(self, input, memory, seq_len):
-        mask = torch.zeros_like(input)
-        mask[:, 0:seq_len] = 1
-
-        out =  self.decoder(
-            tgt=input,
-            memory=memory,
-            tgt_make=mask,
-            memory_mask=mask,
-        )
+    def forward(self, input):
+        out = self.transformer(input)
 
         return out
 
