@@ -1,14 +1,14 @@
 import os
-import torch
+import pickle
 import pandas as pd
-from torch.utils import Dataset
+from torch.utils import data
 
-class FrameLoader(Dataset):
+class FrameLoader(data.Dataset):
     def __init__(
         self,
         path="./data",
         mode="training",
-        csv_path="../next_dataset/",
+        csv_path="../next-dataset/",
         feature_suffix="_vit_features",
         checkpoint_type=".pt"
         ):
@@ -36,7 +36,7 @@ class FrameLoader(Dataset):
     def __getitem__(self, index):
         example = self.csv.iloc[index]
 
-        video_id = example['video_id']
+        video_id = str(example['video_id'])
         
         question = example['question']
         a0 = example['a0']
@@ -46,7 +46,8 @@ class FrameLoader(Dataset):
         a4 = example['a4']
 
         video_path = self.video_map[video_id]
-        video_feature = torch.load(video_path)
+        with open(video_path, 'rb') as f:
+            video_feature = pickle.load(f)
 
         data = {
             "question": question,
