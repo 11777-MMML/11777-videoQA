@@ -4,6 +4,7 @@ import torch.nn.functional as F
 from dataclasses import dataclass
 from typing import Optional
 import math
+import numpy as np
 from collections import OrderedDict
 from enum import IntEnum
 
@@ -12,7 +13,7 @@ class Config:
     # ATPEncoder params
     n_layers: int = 8
     frame_input_dim = 768
-    n_frames = 16
+    n_frames: int = 16
     qa_input_dim = 512
     n_heads: int = 8
     d_model: int = 512
@@ -20,6 +21,8 @@ class Config:
     enc_dropout: float = 0.1
     n_answers: int = 5
     n_cands: int = 0
+    final_dim: int = 512
+    clip_frames: int = 16
     
     @classmethod
     def from_args(cls, args):
@@ -29,6 +32,7 @@ class Config:
                 #    d_model_ff = args.d_model_ff,
                    enc_dropout = args.enc_dropout,
                    n_answers = args.n_answers,
+                   clip_frames = args.clip_frames,
                    n_cands = args.n_cands)
 
 class ModalityEmbeddingsID(IntEnum):
@@ -131,6 +135,11 @@ class FrameQAReasonLayer(nn.Module):
     # def forward(self, x):
     #     x = self.encoder_layer(x)
     #     return x
+def shufflerow(tensor, axis, device):
+    row_perm = torch.rand(tensor.shape[:axis+1]).argsort(axis).to(device)  # get permutation indices
+    for _ in range(tensor.ndim-axis-1): row_perm.unsqueeze_(-1)
+    row_perm = row_perm.repeat(*[1 for _ in range(axis+1)], *(tensor.shape[axis+1:]))  # reformat this for the gather operation
+    return tensor.gather(axis, row_perm)
 
 class TemporalEncoding(nn.Module):
 
@@ -160,8 +169,20 @@ class FrameQAReasonModel(nn.Module):
         self.frame_projection = nn.Linear(config.frame_input_dim, config.d_model)
         self.qa_projection = nn.Linear(config.qa_input_dim, config.d_model)
         # self.a_projection = nn.Linear(config.qa_input_dim, config.d_model)
-        self.video_temporal_encoder = TemporalEncoding(config.d_model, max_len=config.n_frames)
+        self.video_temporal_encoder = TemporalEncoding(config.d_model, max_len=config.clip_frames)
         self.vis_q_condition = nn.MultiheadAttention(config.d_model, config.n_heads) 
+
+        self.vision_post_norm = nn.LayerNorm(config.d_model)
+        self.question_post_norm = nn.LayerNorm(config.d_model)
+        self.answer_post_norm = nn.LayerNorm(config.d_model)
+
+        self.final_vision_proj = nn.Linear(config.d_model, config.final_dim)
+        self.final_question_proj = nn.Linear(config.d_model, config.final_dim)
+        self.final_ans_proj = nn.Linear(config.d_model, config.final_dim)
+
+        self.logit_scale = nn.Parameter(torch.ones([]) * np.log(1 / 0.07))
+
+
         self.logits = nn.Linear(config.d_model, 1)
 
         self.reasoning_module = nn.Sequential(OrderedDict(
@@ -183,6 +204,11 @@ class FrameQAReasonModel(nn.Module):
         vision_cls_ids = [ModalityEmbeddingsID.VISUAL_EMBEDDING] * L
         vision_cls_ids = torch.tensor(vision_cls_ids, dtype=torch.long, device=x_vis_seq.device).unsqueeze(-1)
         x_vis_seq = x_vis_seq + self.modality_embedding_layer(vision_cls_ids)
+
+        if "mode" not in kwargs or kwargs["mode"] not in ["val", "test"]:
+            x_vis_seq = x_vis_seq.permute(1, 0, 2)
+            x_vis_seq = shufflerow(x_vis_seq, 1, x_vis_seq.device)[:, :self.config.n_frames]
+            x_vis_seq = x_vis_seq.permute(1, 0, 2)
 
    
 
@@ -216,6 +242,10 @@ class FrameQAReasonModel(nn.Module):
 
         x_vis, x_question, x_ans = self.reasoning_module(x_input)
 
+        x_vis = self.final_vision_proj(self.vision_post_norm(x_vis))
+        x_question = self.final_question_proj(self.question_post_norm(x_question))
+        x_ans = self.final_ans_proj(self.answer_post_norm(x_ans))
+
         # x_question, x_vis_ans = self.reasoning_module(x_input)
 
         # x_vis = x_vis_ans[:len(x_vis_ans) - (self.config.n_answers)]
@@ -235,10 +265,11 @@ class FrameQAReasonModel(nn.Module):
 
         # visual_rep, scores = self.logits(x_txt_qa[0].unsqueeze(0), x_vis_seq, x_vis_seq)
         # text_rep, scores = self.logits(x_vis_seq, x_txt_qa, x_txt_qa)
+
         logits = F.cosine_similarity(x_question, x_ans, dim=-1)
         # logits = self.logits(x_ans)
         # print(logits.shape)
-        # logits = logits.squeeze()#.transpose(0,1)
+        logits = logits.squeeze()#.transpose(0,1)
 
         # logits = scores.mean(dim=1)
 

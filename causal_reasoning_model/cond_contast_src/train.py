@@ -172,9 +172,9 @@ def main(args):
             # refactored the "forward pass" here into an example code snippet in atp.py; feel free to modify/replace here!
             y_pred, x_question, x_ans, x_cands = frame_qa_model(x_vis_seq, x_txt_qa)
 
-            x_ans = x_ans.permute(1, 0, 2)
-            # x_cands = x_cands.permute(1, 0, 2)
-            x_question = x_question.permute(1, 0, 2)
+            # x_ans = x_ans.permute(1, 0, 2)
+            # # x_cands = x_cands.permute(1, 0, 2)
+            # x_question = x_question.permute(1, 0, 2)
             y_pred = y_pred.transpose(0, 1)
 
 
@@ -196,15 +196,13 @@ def main(args):
 
             # anchor = x_question
             
-            # ce_loss = F.cross_entropy(y_pred, y_gt)
+            ce_loss = F.cross_entropy(y_pred, y_gt)
             # ce_loss = None
             # for idx in range(negatives.size(1)):
             #     if ce_loss is None:
             #         ce_loss = margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
             #     else:
             #         ce_loss = ce_loss + margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
-
-            ce_loss = cross_entropy(y_pred, y_gt)
 
             loss = ce_loss #+ triplet_loss
 
@@ -244,7 +242,7 @@ def main(args):
                     batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
                 batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)                
                 x_vis_seq, x_txt_qa, y_gt, q_types = batch
-                y_pred, _, _, _ = frame_qa_model(x_vis_seq, x_txt_qa)
+                y_pred, _, _, _ = frame_qa_model(x_vis_seq, x_txt_qa, mode="val")
                 # y_pred = logits.permute(1, 0, 2).squeeze()
                 y_pred = y_pred.transpose(0, 1)
                 

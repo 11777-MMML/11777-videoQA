@@ -4,7 +4,7 @@ python train.py \
 --text_features_path ./data/qas_bert \
 --csv_dataset_path ./data/next-dataset \
 --batch_size 512 \
---clip_frames 16 \
+--clip_frames 80 \
 --lr 1e-4 \
 --text_clip \
 --n_cands 0 \
