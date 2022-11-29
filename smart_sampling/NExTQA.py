@@ -39,11 +39,14 @@ class FrameLoader(data.Dataset):
         video_id = str(example['video_id'])
         
         question = example['question']
+        
         a0 = example['a0']
         a1 = example['a1']
         a2 = example['a2']
         a3 = example['a3']
         a4 = example['a4']
+        
+        answer = example['answer'] 
 
         video_path = self.video_map[video_id]
         with open(video_path, 'rb') as f:
@@ -56,6 +59,7 @@ class FrameLoader(data.Dataset):
             "a2": a2,
             "a3": a3,
             "a4": a4,
+            "answer": answer,
             "video_feature": video_feature
         }
         return data
