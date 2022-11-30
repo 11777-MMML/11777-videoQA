@@ -146,7 +146,7 @@ class FrameEnvironment(Env):
 
         penalty = self.normalization_factor * prediction_error + (1 - self.normalization_factor) * frame_penalty
 
-        return -penalty
+        return -penalty.cpu().numpy()
     
     def _dense_reward(self, curr_step: int) -> float32:
         return 0
