@@ -1,3 +1,4 @@
+import numpy as np
 from gym import Env, spaces
 from torch.utils.data import Dataset
 from transformers import DistilBertModel, DistilBertTokenizer
@@ -16,7 +17,7 @@ class FrameEnvironment(Env):
         self.embedding_dim = embedding_dim
 
         # Give aggregation of previous frames back
-        self.observation_space = spaces.Box(embedding_dim, high=float('nan'))
+        self.observation_space = spaces.Box(shape=(embedding_dim,), low=-np.inf, high=np.inf)
     
         # Source of Frames
         self.dataset = dataset
@@ -103,7 +104,7 @@ class FrameEnvironment(Env):
         self._curr_obs = self._frames[self._curr_step]
         temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
         rep = self.state_model(temp_buffer)
-        return rep[-1]
+        return rep[-1].cpu().detach().numpy()
 
     # def _reward(self, state_input: Tensor, curr_step: int) -> float32:
     #     next_obs_pred = self.prediction_model(state_input)
@@ -168,6 +169,6 @@ class FrameEnvironment(Env):
             rep = self.state_model(temp_buffer)
 
         # TODO: Add infos for debugging
-        return rep[-1], reward, done, {}
+        return rep[-1].cpu().detach().numpy(), reward, done, {}
             
 
