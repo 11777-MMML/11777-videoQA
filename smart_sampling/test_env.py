@@ -1,9 +1,6 @@
-import torch
 from env import FrameEnvironment
 from NExTQA import FrameLoader
 from models import StateConfig, StateModel, PredictionConfig, PredictionModel
-
-torch.manual_seed(1)
 
 model_config = StateConfig()
 prediction_config = PredictionConfig()
