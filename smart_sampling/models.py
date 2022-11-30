@@ -98,7 +98,6 @@ class PredictionModel(nn.Module):
         out = self.transformer(rep)
         out_q = out[num_frames + 1]
         out_candidates = out[-len_candidates:]
-        print(out_q.shape, out_candidates.shape)
 
         return F.cosine_similarity(out_q, out_candidates)
 
