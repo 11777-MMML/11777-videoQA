@@ -69,10 +69,16 @@ class FrameEnvironment(Env):
     def reset(self):
         low = 0
         high = len(self.dataset)
-        index = randint(low=low, high=high, size=(1,)).item()
+        success = False
 
-        example = self.dataset[index]
-
+        while not success:
+            try:
+                index = randint(low=low, high=high, size=(1,)).item()
+                example = self.dataset[index]
+                success = True
+            except:
+                success = False
+        
         question = example["question"]
         
         a0 = example["a0"]
