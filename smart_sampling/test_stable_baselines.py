@@ -22,6 +22,16 @@ env = FrameEnvironment(
 )
 
 check_env(env)
+
+make_env = lambda :  FrameEnvironment(
+    embedding_dim=768,
+    dataset=dataset,
+    state_model=state_model,
+    prediction_model=prediction_model,
+    normalization_factor=0.5
+)
+
+env = make_vec_env(make_env, n_envs=4)
 model = A2C("MlpPolicy", env).learn(total_timesteps=10)
 
 print("\n\nSuccess!\n\n")
