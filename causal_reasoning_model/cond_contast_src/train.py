@@ -19,7 +19,7 @@ from torch import nn
 from torch.utils.data.dataloader import default_collate
 from torch.utils.tensorboard import SummaryWriter
 from NExTQA import TYPE_MAP, A_CHOICES
-# from discord import SyncWebhook
+from discord import SyncWebhook
 
 ANS_CANDS = ["question", "a0", "a1", "a2", "a3", "a4"] #+ [f"{choice}_cand{k}" for choice in A_CHOICES for k in range(5)]
 
@@ -87,9 +87,19 @@ class TextModel(nn.Module):
 
 
 def main(args):
-    writer = SummaryWriter()
+    if args.exp_name is None:
+        writer = SummaryWriter()
+        model_dir = os.path.join("checkpoints", os.path.basename(writer.log_dir))
+    else:
+        if os.path.exists(os.path.join("runs", args.exp_name)):
+            os.rmdir(os.path.join("runs", args.exp_name))
+        if os.path.exists(os.path.join("checkpoints", args.exp_name)):
+            os.rmdir(os.path.join("checkpoints", args.exp_name))
+        writer = SummaryWriter(log_dir=os.path.join("runs", args.exp_name))
+        model_dir = os.path.join("checkpoints", args.exp_name)
+        
     seed_everything(args.seed)
-    # webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
+    webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
     config = Config.from_args(args)
     device = torch.device("cuda:0" if args.gpus > 0 else "cpu")
     frame_qa_model = FrameQAReasonModel(config).to(device)
@@ -99,9 +109,6 @@ def main(args):
     if args.text_clip:
 
         visual_projector = None
-        
-        
-        
         model_type = "clip"
         train_text_embeddings = False
         if model_type == "bert":
@@ -312,6 +319,9 @@ if __name__ == "__main__":
     parser.add_argument("--video_features_path", type=str, help="Path to video features")
     parser.add_argument("--text_features_path", type=str, help="Path to text features")
     parser.add_argument("--csv_dataset_path", type=str, help="Path to csv dataset")
+
+    # Model path parameters
+    parser.add_argument("--exp_name", type=str, default=None, help="Path to model checkpoints and run logs, default will be set to timestamp based path")
 
     parser.add_argument('--n_frames', default=8, type=int, help="number of frames sampled for input; see data.py")
 
