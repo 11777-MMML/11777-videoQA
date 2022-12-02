@@ -1,8 +1,8 @@
 eval "$(conda shell.bash hook)"
 python train.py \
---video_features_path ./data/data \
+--video_features_path /home/ubuntu/11777-videoQA/causal_reasoning_model/data \
 --text_features_path ./data/qas_bert \
---csv_dataset_path ./data/next-dataset \
+--csv_dataset_path /home/ubuntu/11777-videoQA/next-dataset \
 --batch_size 512 \
 --clip_frames 80 \
 --lr 1e-4 \

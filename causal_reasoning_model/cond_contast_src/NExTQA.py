@@ -21,12 +21,12 @@ class NextQADataset(data.Dataset):
         self.csv_dataset_path = args.csv_dataset_path
         self.clip_frames = args.clip_frames
         self.text_clip = args.text_clip
+        self.num_classes = 5
         if self.text_clip:
             self.video_features_path = os.path.join(self.video_features_path, f'clip_{self.clip_frames}_feats')
-        self.num_classes = 5
-
-        self.text_features_file = os.path.join(self.text_features_path, f'bert_ft_{self.split}.h5')
-        self.text_features = h5py.File(self.text_features_file)['feat']
+        else:
+            self.text_features_file = os.path.join(self.text_features_path, f'bert_ft_{self.split}.h5')
+            self.text_features = h5py.File(self.text_features_file)['feat']
 
         # Define file locations
         self.csv_file = os.path.join(self.csv_dataset_path, f'{self.split}.csv')
@@ -80,11 +80,10 @@ class NextQADataset(data.Dataset):
         video_feature = torch.tensor(video_feature, requires_grad=False)
 
         # Get the label
-        text_feature = self.text_features[index]
-        text_feature = torch.tensor(text_feature)
-
-        # Take only the CLS token
-        text_feature = text_feature[:, 0]
+        if self.text_clip == False:
+            text_feature = self.text_features[index]
+            text_feature = torch.tensor(text_feature)
+            text_feature = text_feature[:, 0]
 
         label = example['answer']
         q = question
