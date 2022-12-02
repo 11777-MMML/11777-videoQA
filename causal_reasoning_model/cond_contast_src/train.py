@@ -265,7 +265,7 @@ def main(args):
         c_acc = all_val_accs[all_val_types == TYPE_MAP["C"]].mean().item()
         log(f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}")
         msg = f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}"
-        # webhook.send(msg)
+        webhook.send(msg)
         writer.add_scalar("Accu/val", overall_acc, epoch_i)
         writer.add_scalar("d_Accu/val", d_acc, epoch_i)
         writer.add_scalar("t_Accu/val", t_acc, epoch_i)
@@ -273,9 +273,9 @@ def main(args):
 
         if overall_acc > best:
             best = overall_acc
-            if os.path.exists(os.path.dirname(f'checkpoints/best_atp_{epoch_i}.pt')) == False:
-                os.makedirs(os.path.dirname(f'checkpoints/best_atp_{epoch_i}.pt'), exist_ok=True)
-            torch.save(frame_qa_model.state_dict(), f'checkpoints/best_atp_{epoch_i}.pt')
+            if os.path.exists(os.path.dirname(os.path.join(model_dir, f'best_atp_{epoch_i}.pt'))) == False:
+                os.makedirs(os.path.dirname(os.path.join(model_dir, f'best_atp_{epoch_i}.pt')), exist_ok=True)
+            torch.save(frame_qa_model.state_dict(), os.path.join(model_dir, f'best_atp_{epoch_i}.pt'))
     return 0
 
 
