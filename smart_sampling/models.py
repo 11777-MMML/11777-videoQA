@@ -177,4 +177,6 @@ class Agent(nn.Module):
         self.policy_network = self.policy_network.to(self.device)
         
     def forward(self, input_obs):
+        input_obs = torch.tensor(input_obs)
+        input_obs = input_obs.to(self.device)
         return self.policy_network(input_obs)
