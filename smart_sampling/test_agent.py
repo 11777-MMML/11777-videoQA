@@ -1,3 +1,4 @@
+import torch
 from env import FrameEnvironment
 from NExTQA import FrameLoader
 from models import StateConfig, StateModel, PredictionConfig, PredictionModel, AgentConfig, Agent
@@ -9,6 +10,7 @@ agent_config = AgentConfig()
 state_model = StateModel(model_config)
 prediction_model = PredictionModel(prediction_config)
 agent = Agent(agent_config)
+agent = agent.to(agent.device)
 
 dataset = FrameLoader()
 
@@ -21,7 +23,7 @@ env = FrameEnvironment(
 )
 
 state = env.reset()
-print(f"start_state:{state}")
+print(f"start_state:{state.shape}")
 
 done = False
 
