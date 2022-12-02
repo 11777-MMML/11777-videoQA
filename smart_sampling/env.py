@@ -2,7 +2,7 @@ import numpy as np
 from gym import Env, spaces
 from torch.utils.data import Dataset
 from transformers import DistilBertModel, DistilBertTokenizer
-from torch import randint, nn, concat, square, sum, Tensor, float32, no_grad, device, cuda, argmax
+from torch import randint, nn, float32, no_grad, device, cuda, argmax, optim, zeros_like
 
 BERT_CHECKPOINT = "distilbert-base-uncased"
 
@@ -27,6 +27,8 @@ class FrameEnvironment(Env):
 
         # Prediction Model
         self.prediction_model = prediction_model
+        self.prediction_optimizer = optim.AdamW(self.prediction_model.parameters(), lr=0.0003)
+        self.cross_entropy_loss = nn.CrossEntropyLoss()
 
         # Normalization factor
         self.normalization_factor = normalization_factor
@@ -38,10 +40,14 @@ class FrameEnvironment(Env):
         self._max_step = None
         self._curr_obs = None
 
+        # Performance
+        self._prediction_error = 0
+
         # Question Answering
         self._question = None
         self._candidates = []
         self._answer = None
+        self._is_correct = False
 
         # Can be removed if embeddings are saved
         # Language Model
@@ -91,7 +97,7 @@ class FrameEnvironment(Env):
 
         self._question = question
         self._candidates = [a0, a1, a2, a3, a4]
-        self._answer = answer 
+        self._answer = int(answer)
 
         video_feature = example["video_feature"]
 
@@ -140,13 +146,23 @@ class FrameEnvironment(Env):
         logits = self.prediction_model(self._buffer, [question_rep], candidates)
 
         # Penalty if we get it wrong
-        prediction_error = argmax(logits) != self._answer
+        y_gt = zeros_like(logits)
+        y_gt[self._answer] = 1
+        prediction_error = self.cross_entropy_loss(logits, y_gt)
+        self._is_correct = self._answer == argmax(logits)
+
+        self.prediction_optimizer.zero_grad()
+        prediction_error.backward()
+        self.prediction_optimizer.step()
+
+        prediction_error = prediction_error.detach().cpu().numpy()
+        self._prediction_error = prediction_error
         buffer_size = len(self._buffer)
         frame_penalty = (buffer_size/self._max_step)
 
         penalty = self.normalization_factor * prediction_error + (1 - self.normalization_factor) * frame_penalty
 
-        return -penalty.cpu().numpy()
+        return -penalty
     
     def _dense_reward(self, curr_step: int) -> float32:
         return 0
