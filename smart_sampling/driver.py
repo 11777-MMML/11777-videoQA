@@ -1,4 +1,5 @@
 from env import FrameEnvironment
+from eval import eval
 from NExTQA import FrameLoader
 from stable_baselines3 import A2C
 from stable_baselines3.common.evaluation import evaluate_policy
@@ -6,6 +7,7 @@ from stable_baselines3.common.callbacks import BaseCallback
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.logger import configure
 from stable_baselines3.common.env_util import make_vec_env
+from stable_baselines3.common.vec_env.dummy_vec_env import DummyVecEnv
 from models import StateConfig, StateModel, PredictionConfig, PredictionModel
 
 STEPS = 10000
@@ -40,7 +42,7 @@ class TensorBoardCallback(BaseCallback):
     def _on_training_end(self):
         self.logger.record("total_examples", self.total_examples)
         self.logger.record("total_correct", self.total_correct)
-        self.logger.record("Accuracy", self.total_correct/self.total_examples)
+        self.logger.record("Train/Accuracy", self.total_correct/self.total_examples)
 
         self.total_examples = 0
         self.total_correct = 0
@@ -59,7 +61,8 @@ train_env = FrameEnvironment(
     dataset=train_dataset,
     state_model=state_model,
     prediction_model=prediction_model,
-    normalization_factor=0.5
+    normalization_factor=0.5,
+    train=True
 )
 
 train_env = Monitor(train_env)
@@ -70,10 +73,13 @@ val_env = FrameEnvironment(
     dataset=val_dataset,
     state_model=state_model,
     prediction_model=prediction_model,
-    normalization_factor=0.5
+    normalization_factor=0.5,
+    train=False
 )
 
 val_env = Monitor(val_env)
+make_env = lambda: val_env
+val_env = DummyVecEnv([make_env])
 
 log_path = "./logs/"
 logger = configure(
@@ -88,7 +94,8 @@ for epoch in range(EPOCHS):
     print("TRAINING!")
     model.learn(total_timesteps=STEPS, tb_log_name="training_run", callback=TensorBoardCallback())
     
-    # print("EVALUATING!")
+    print("EVALUATING!")
     # mean_reward, std_reward = evaluate_policy(model, val_env, n_eval_episodes=EVAL_EPISODES)
     # print(f"mean_reward={mean_reward:.2f} +/- {std_reward}")
+    eval(EVAL_EPISODES, model, val_env)
 print("\n\nSuccess!\n\n")
