@@ -30,7 +30,7 @@ class TensorBoardCallback(BaseCallback):
         buffer_size = len(base_env._buffer)
         num_frames = base_env._max_step
 
-        if is_correct == 0:
+        if is_correct:
             self.total_correct += 1
         self.total_examples += 1
 
