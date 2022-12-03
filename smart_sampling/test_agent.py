@@ -19,7 +19,8 @@ env = FrameEnvironment(
     dataset=dataset,
     state_model=state_model,
     prediction_model=prediction_model,
-    normalization_factor=0.5
+    normalization_factor=0.5,
+    train=True
 )
 
 state = env.reset()
