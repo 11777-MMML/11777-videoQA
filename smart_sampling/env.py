@@ -7,7 +7,7 @@ from torch import randint, nn, float32, no_grad, device, cuda, argmax, optim, ze
 BERT_CHECKPOINT = "distilbert-base-uncased"
 
 class FrameEnvironment(Env):
-    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float):
+    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float, train: bool):
         super().__init__()
 
         # Add state to buffer
@@ -61,6 +61,9 @@ class FrameEnvironment(Env):
         self.state_model.to(self._device)
         self.prediction_model.to(self._device)
         self._language_model.to(self._device)
+
+        # Training
+        self._train = train
     
     def get_representation_from_lm(self, text_input):
         with no_grad():
@@ -131,6 +134,16 @@ class FrameEnvironment(Env):
     #     # The higher this value, less is the reward
     #     return -reward
     
+    def _calculate_final_reward(self, question_rep, candidates):
+        logits = self.prediction_model(self._buffer, [question_rep], candidates)
+
+        y_gt = zeros_like(logits)
+        y_gt[self._answer] = 1
+        prediction_error = self.cross_entropy_loss(logits, y_gt)
+        self._is_correct = self._answer == argmax(logits)
+
+        return prediction_error
+
     def _sparse_reward(self) -> float32:
 
         question_rep = self.get_representation_from_lm(self._question)
@@ -143,17 +156,16 @@ class FrameEnvironment(Env):
             candidate_rep = candidate_rep.unsqueeze(0)
             candidates.append(candidate_rep)
         
-        logits = self.prediction_model(self._buffer, [question_rep], candidates)
-
-        # Penalty if we get it wrong
-        y_gt = zeros_like(logits)
-        y_gt[self._answer] = 1
-        prediction_error = self.cross_entropy_loss(logits, y_gt)
-        self._is_correct = self._answer == argmax(logits)
-
-        self.prediction_optimizer.zero_grad()
-        prediction_error.backward()
-        self.prediction_optimizer.step()
+        if not self._train:
+            with no_grad():
+                self.prediction_model.eval()
+                prediction_error = self._calculate_final_reward(question_rep, candidates)
+        else:
+            self.prediction_model.train()
+            prediction_error = self._calculate_final_reward(question_rep, candidates)
+            self.prediction_optimizer.zero_grad()
+            prediction_error.backward()
+            self.prediction_optimizer.step()
 
         prediction_error = prediction_error.detach().cpu().numpy()
         self._prediction_error = prediction_error
