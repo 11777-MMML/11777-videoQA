@@ -2,12 +2,12 @@ import numpy as np
 from gym import Env, spaces
 from torch.utils.data import Dataset
 from transformers import DistilBertModel, DistilBertTokenizer
-from torch import randint, nn, float32, no_grad, device, cuda, argmax, optim, zeros_like
+from torch import randint, nn, float32, no_grad, device, cuda, argmax, optim, zeros_like, Tensor, hstack
 
 BERT_CHECKPOINT = "distilbert-base-uncased"
 
 class FrameEnvironment(Env):
-    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float, train: bool):
+    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float, train: bool, dense_reward: bool):
         super().__init__()
 
         # Add state to buffer
@@ -28,7 +28,7 @@ class FrameEnvironment(Env):
         # Prediction Model
         self.prediction_model = prediction_model
         self.prediction_optimizer = optim.AdamW(self.prediction_model.parameters(), lr=0.0003)
-        self.cross_entropy_loss = nn.CrossEntropyLoss()
+        self.prediction_cross_entropy_loss = nn.CrossEntropyLoss()
 
         # Normalization factor
         self.normalization_factor = normalization_factor
@@ -42,6 +42,7 @@ class FrameEnvironment(Env):
 
         # Performance
         self._prediction_error = 0
+        self._next_frame_prediction_error = 0
 
         # Question Answering
         self._question = None
@@ -64,6 +65,18 @@ class FrameEnvironment(Env):
 
         # Training
         self._train = train
+
+        # Dense Reward
+        self._has_dense_reward = dense_reward
+        self.classifier = nn.Linear(
+            in_features=2 * self.embedding_dim, 
+            out_features=1,
+            bias=True,
+            device=self._device,
+        )
+
+        self.state_optimizer = optim.AdamW(self.state_model.parameters(), lr=0.0003)
+        self.state_cross_entropy_loss = nn.BCEWithLogitsLoss()
     
     def get_representation_from_lm(self, text_input):
         with no_grad():
@@ -120,26 +133,13 @@ class FrameEnvironment(Env):
         temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
         rep = self.state_model(temp_buffer)
         return rep[-1].cpu().detach().numpy()
-
-    # def _reward(self, state_input: Tensor, curr_step: int) -> float32:
-    #     next_obs_pred = self.prediction_model(state_input)
-    #     next_frame = curr_step + 1
-    #     prediction_error = sum(square(next_obs_pred - next_frame))
-
-    #     buffer_size = len(self._buffer)
-    #     frame_penalty = (buffer_size/self._max_step)
-
-    #     reward = self.normalization_factor * prediction_error + (1 - self.normalization_factor) * frame_penalty
-
-    #     # The higher this value, less is the reward
-    #     return -reward
     
     def _calculate_final_reward(self, question_rep, candidates):
         logits = self.prediction_model(self._buffer, [question_rep], candidates)
 
         y_gt = zeros_like(logits)
         y_gt[self._answer] = 1
-        prediction_error = self.cross_entropy_loss(logits, y_gt)
+        prediction_error = self.prediction_cross_entropy_loss(logits, y_gt)
         self._is_correct = self._answer == argmax(logits)
 
         return prediction_error
@@ -176,7 +176,49 @@ class FrameEnvironment(Env):
 
         return -penalty
     
-    def _dense_reward(self, curr_step: int) -> float32:
+    def _calculate_step_reward(self, input_tensor, is_next_frame):
+        logits = self.classifier(input_tensor)
+        next_frame_prediction_error = self.state_cross_entropy_loss(logits, is_next_frame)
+
+        return next_frame_prediction_error
+
+    def _dense_reward(self, curr_step: int, curr_rep: Tensor) -> float32:
+        if curr_step + 1 < self._max_step and self._has_dense_reward:
+            frame = None
+            is_next_frame = randint(low=0, high=2, size=(1,))
+            
+            if is_next_frame.item() == 1:
+                frame = self._frames[curr_step + 1]
+            else:
+                index = randint(low=curr_step+1, high=self._max_step, size=(1,)).item()
+                frame = self._frames[index]
+            
+            frame = frame.to(self._device)
+
+            is_next_frame = is_next_frame.to(self._device)
+            is_next_frame = is_next_frame.unsqueeze(0)
+            is_next_frame = is_next_frame.to(float32)
+            
+            curr_rep = curr_rep.unsqueeze(0)
+            frame = frame.unsqueeze(0)
+
+            input_tensor = hstack(tensors=(curr_rep, frame))
+
+            if not self._train:
+                with no_grad():
+                    self.classifier.eval()
+                    next_frame_prediction_error = self._calculate_step_reward(input_tensor, is_next_frame)
+            else:
+                next_frame_prediction_error = self._calculate_step_reward(input_tensor, is_next_frame)
+                self.state_optimizer.zero_grad()
+                next_frame_prediction_error.backward()
+                self.state_optimizer.step()
+            
+            next_frame_prediction_error = next_frame_prediction_error.detach().cpu().numpy().item()
+            self._next_frame_prediction_error = next_frame_prediction_error
+
+            return -self._next_frame_prediction_error
+                
         return 0
     
     def step(self, action):
@@ -184,23 +226,30 @@ class FrameEnvironment(Env):
         if action > 0:
             self._buffer.append(self._curr_obs.unsqueeze(0))
 
-        
-        # calculate the reward
-        reward = self._dense_reward(self._curr_step)
-
         # Go to the next frame
         self._curr_step += 1
 
         done = False
+        reward = 0
+
         if self._curr_step == self._max_step:
             done = True
-            reward += self._sparse_reward()
+            reward = self._sparse_reward()
             rep = self.state_model(self._buffer)
         else:
             # For the nth step look at n + 1 frames
             self._curr_obs = self._frames[self._curr_step]
             temp_buffer = self._buffer + [self._curr_obs.unsqueeze(0)]
-            rep = self.state_model(temp_buffer)
+
+            if not self._train or not self._has_dense_reward:
+                with no_grad():
+                    self.state_model.eval()
+                    rep = self.state_model(temp_buffer)
+            else:
+                rep = self.state_model(temp_buffer)
+
+            # calculate the reward
+            reward = self._dense_reward(self._curr_step, rep[-1])
 
         # TODO: Add infos for debugging
         return rep[-1].cpu().detach().numpy(), reward, done, {}
