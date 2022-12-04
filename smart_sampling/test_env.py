@@ -16,13 +16,14 @@ env = FrameEnvironment(
     state_model=state_model,
     prediction_model=prediction_model,
     normalization_factor=0.5,
-    train=False
+    train=True,
+    dense_reward=True,
 )
 
 start_state = env.reset()
 print("start state:", start_state.shape)
 next_state, reward, done, _ = env.step(0)
-print("next state:", next_state)
+print("next state:", next_state.shape)
 
 count = 0
 while not done:

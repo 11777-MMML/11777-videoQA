@@ -19,7 +19,8 @@ env = FrameEnvironment(
     state_model=state_model,
     prediction_model=prediction_model,
     normalization_factor=0.5,
-    train=True
+    train=True,
+    dense_reward=True,
 )
 
 check_env(env)
@@ -30,7 +31,8 @@ make_env = lambda :  FrameEnvironment(
     state_model=state_model,
     prediction_model=prediction_model,
     normalization_factor=0.5,
-    train=True
+    train=True,
+    dense_reward=True,
 )
 
 env = make_vec_env(make_env, n_envs=4)

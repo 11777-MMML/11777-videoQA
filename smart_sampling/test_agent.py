@@ -20,7 +20,8 @@ env = FrameEnvironment(
     state_model=state_model,
     prediction_model=prediction_model,
     normalization_factor=0.5,
-    train=True
+    train=True,
+    dense_reward=True,
 )
 
 state = env.reset()
