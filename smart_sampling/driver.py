@@ -21,6 +21,10 @@ class TensorBoardCallback(BaseCallback):
         self.total_correct = 0
         
     def _on_step(self):
+        base_env = self.training_env.envs[0].env
+        next_frame_prediction_error = base_env._next_frame_prediction_error
+
+        self.logger.record("frame_prediction_error", next_frame_prediction_error)
         return True
     
     def _on_rollout_end(self):
@@ -62,7 +66,8 @@ train_env = FrameEnvironment(
     state_model=state_model,
     prediction_model=prediction_model,
     normalization_factor=0.5,
-    train=True
+    train=True,
+    dense_reward=True,
 )
 
 train_env = Monitor(train_env)
@@ -73,8 +78,9 @@ val_env = FrameEnvironment(
     dataset=val_dataset,
     state_model=state_model,
     prediction_model=prediction_model,
-    normalization_factor=0.5,
-    train=False
+    normalization_factor=0.99,
+    train=False,
+    dense_reward=True,
 )
 
 val_env = Monitor(val_env)
