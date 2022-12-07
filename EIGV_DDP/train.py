@@ -1,4 +1,3 @@
-# CUDA_VISIBLE_DEVICES=0,1,2,3 nohup python train.py --logs=0 > exp0.out &
 import torch
 import numpy as np
 import argparse
@@ -161,8 +160,12 @@ def demo_ddp(rank, world_size):
     logger, sign = data_logger(args)
     setup(rank, world_size)
     
-    args.logs = f"./logs/exp{args.logs}"
-    writer = SummaryWriter(args.logs)
+    best_model_dir = f'./models/exp{args.logs}'
+    if not os.path.isdir(best_model_dir):
+        os.makedirs(best_model_dir)
+
+    logs_dir = f"./logs/exp{args.logs}"
+    writer = SummaryWriter(logs_dir)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu", rank)
 
@@ -222,7 +225,7 @@ def demo_ddp(rank, world_size):
         if eval_score > best_eval_score:
             best_eval_score = eval_score
             best_epoch = epoch 
-            best_model_path='./models/best_model-{}.ckpt'.format(sign)
+            best_model_path= os.path.join(best_model_dir, f'best_model_epoch{best_epoch}_exp{args.logs}.ckpt')
             if rank==0:
                 model_to_save = model.module if hasattr(model, 'module') else model
                 torch.save(model_to_save.state_dict(), best_model_path)
@@ -249,4 +252,6 @@ if __name__=="__main__":
     world_size = n_gpus
     run_demo(demo_ddp, world_size)
 
-
+# CUDA_VISIBLE_DEVICES=0,1,2,3 python train.py --logs=0
+# CUDA_VISIBLE_DEVICES=0,1,2,3 nohup python train.py --logs=0 > exp0.out &
+# [1] 3215 
