@@ -7,3 +7,5 @@
 **/data/**
 */log*
 */results*
+*.out
+__pycache__
