@@ -1,7 +1,12 @@
 import pandas as pd
 import torch
 from torch.utils import data
-from transformers import BertTokenizer, BertModel
+from tqdm import tqdm
+import numpy as np
+from transformers import BertTokenizer, BertModel, AutoTokenizer, AutoModel
+import argparse
+from pdb import set_trace
+import os
 
 class TextLoader(data.Dataset):
     def __init__(
@@ -11,8 +16,9 @@ class TextLoader(data.Dataset):
         self.path = path
         self.csv = pd.read_csv(self.path)
         self.num_answers = 5
-        self.description_key = 'result0'
-        self.target_length = 50
+        self.action_key = 'result0'
+        self.description_key = 'caption'
+        self.target_length = 75
         self.tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
 
     def __len__(self):
@@ -28,11 +34,14 @@ class TextLoader(data.Dataset):
         for i in range(self.num_answers):
             answers.append(example[f'a{i}'])
         
-        description = example[self.description_key]
+        caption = example[self.description_key]
+        action = example[self.action_key]
 
         text_reps = []
         for answer in answers:
-            text_rep = [description, question, answer]
+            text_rep = [action, caption, question, answer]
+            text_rep_test = " ".join(text_rep)
+            text_rep_test = text_rep_test.split(" ")
             text_rep = " [SEP] ".join(text_rep)
             text_rep = "[CLS]" + " " + text_rep
 
@@ -51,19 +60,36 @@ class TextLoader(data.Dataset):
         return text_reps
 
 if __name__ == "__main__":
-    dataset = TextLoader('train_with_captions_actions.csv') 
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--split', type=str, default="train", help='split')
+    args = parser.parse_args()
+    split = args.split
+    print(split)
+    dataset = TextLoader(f'{split}_with_captions_actions.csv') 
     loader = data.DataLoader(dataset, shuffle=False)
-    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
-    model = BertModel.from_pretrained("bert-base-uncased")
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    for batch in loader:
+    tokenizer = BertTokenizer.from_pretrained("bert-base-uncased")
+    model = BertModel.from_pretrained("bert-base-uncased") # device_map="auto", max_memory=max_memory_mapping
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    model = model.to(device)
+    
+    save_dir = f"./{split}"
+    if not os.path.isdir(save_dir):
+            os.makedirs(save_dir)
+
+    for i, batch in enumerate(tqdm(loader)):
         batch = map(lambda x: x[0], batch)
         batch = list(batch)
-
         inputs = tokenizer(batch, return_tensors="pt")
-        print(inputs.input_ids.size())
+        inputs = inputs.to(model.device)
         outputs = model(**inputs)
         cls_token = outputs.pooler_output
-        print(cls_token.shape)
-        break
+        cls_token = cls_token.unsqueeze(0).detach().cpu()
+        state = outputs.last_hidden_state
+        state = state.unsqueeze(0).detach().cpu()
+        assert cls_token.shape[1]==5, "CLS token shape"
+        assert state.shape[1]==5, "state shape"
+        torch.save(cls_token, os.path.join(save_dir, f"{split}_bert_cls_feats_{i}.pt"))
+        torch.save(state, os.path.join(save_dir, f"{split}_bert_all_feats_{i}.pt"))
+        del inputs
+
