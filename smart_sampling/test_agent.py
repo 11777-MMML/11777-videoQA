@@ -22,6 +22,7 @@ env = FrameEnvironment(
     normalization_factor=0.5,
     train=True,
     dense_reward=True,
+    max_buffer_size=100,
 )
 
 state = env.reset()
