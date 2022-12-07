@@ -21,6 +21,7 @@ env = FrameEnvironment(
     normalization_factor=0.5,
     train=True,
     dense_reward=True,
+    max_buffer_size=100,
 )
 
 check_env(env)
@@ -33,6 +34,7 @@ make_env = lambda :  FrameEnvironment(
     normalization_factor=0.5,
     train=True,
     dense_reward=True,
+    max_buffer_size=100,
 )
 
 env = make_vec_env(make_env, n_envs=4)

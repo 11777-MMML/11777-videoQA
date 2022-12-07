@@ -7,7 +7,9 @@ from torch import randint, nn, float32, no_grad, device, cuda, argmax, optim, ze
 BERT_CHECKPOINT = "distilbert-base-uncased"
 
 class FrameEnvironment(Env):
-    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, prediction_model: nn.Module, normalization_factor: float, train: bool, dense_reward: bool):
+    def __init__(self, embedding_dim: int, dataset: Dataset, state_model: nn.Module, 
+    prediction_model: nn.Module, normalization_factor: float, train: bool, 
+    dense_reward: bool, max_buffer_size: int):
         super().__init__()
 
         # Add state to buffer
@@ -39,6 +41,8 @@ class FrameEnvironment(Env):
         self._curr_step = None
         self._max_step = None
         self._curr_obs = None
+
+        self.max_buffer_size = max_buffer_size
 
         # Performance
         self._prediction_error = 0
@@ -232,7 +236,7 @@ class FrameEnvironment(Env):
         done = False
         reward = 0
 
-        if self._curr_step == self._max_step:
+        if self._curr_step == self._max_step or len(self._buffer) == self.max_buffer_size:
             done = True
             reward = self._sparse_reward()
             rep = self.state_model(self._buffer)
