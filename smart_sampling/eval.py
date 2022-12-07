@@ -1,17 +1,19 @@
 from stable_baselines3 import A2C
+from tqdm import tqdm
 from env import FrameEnvironment
 from NExTQA import FrameLoader
 from stable_baselines3.common.monitor import Monitor
 from stable_baselines3.common.base_class import BaseAlgorithm
 from models import StateConfig, StateModel, PredictionConfig, PredictionModel
 from stable_baselines3.common.vec_env.dummy_vec_env import DummyVecEnv
+
 def eval(num_iters: int, model: BaseAlgorithm, eval_env: DummyVecEnv):
     old_env = model.get_env()
     model.set_env(eval_env)
     total_correct = 0
     total_examples = 0
 
-    for _ in range(num_iters):
+    for _ in tqdm(range(num_iters)):
         obs = model.env.reset()
         done = False
         while not done:
