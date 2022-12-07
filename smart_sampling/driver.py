@@ -38,7 +38,7 @@ class TensorBoardCallback(BaseCallback):
             self.total_correct += 1
         self.total_examples += 1
 
-        self.logger.record("prediction_error", prediction_error)
+        self.logger.record("question_prediction_error", prediction_error)
         self.logger.record("frame_ratio", buffer_size/num_frames)
         self.logger.record("buffer_size", buffer_size)
         self.logger.record("num_frames", num_frames)
@@ -68,6 +68,7 @@ train_env = FrameEnvironment(
     normalization_factor=0.5,
     train=True,
     dense_reward=True,
+    max_buffer_size=100,
 )
 
 train_env = Monitor(train_env)
@@ -81,6 +82,7 @@ val_env = FrameEnvironment(
     normalization_factor=0.99,
     train=False,
     dense_reward=True,
+    max_buffer_size=100,
 )
 
 val_env = Monitor(val_env)
