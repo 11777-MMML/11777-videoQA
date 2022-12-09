@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 import sys
 from math import floor
-sys.path.append('../')
+sys.path.append('../EIGV-2nb/')
 from networks.q_v_transformer import padding_mask_k, padding_mask_q
 from networks import torchnlp_nn as nlpnn
 
@@ -61,8 +61,8 @@ class MemBank(nn.Module):
     def __init__(self):
         super().__init__()
         print('init')
-        # bank_path='/home/ec2-user/feats/vid_feat/app_mot_train.h5'
-        bank_path = '/Users/swarnashree/Documents/MIIS-coursework/Sem3/11777/project/data_for_eigv/vid_feat/app_mot_train.h5'
+        bank_path='/home/ec2-user/feats/vid_feat/app_mot_train.h5'
+        # bank_path = '/Users/swarnashree/Documents/MIIS-coursework/Sem3/11777/project/data_for_eigv/vid_feat/app_mot_train.h5'
         with h5py.File(bank_path) as f:
             self.mem_bank=torch.Tensor(f['feat'][:])
 
@@ -91,11 +91,8 @@ class MemBank(nn.Module):
             else: # for mixed vid
                 weight[torch.arange(bs).unsqueeze(1), vid_idx] = 0
 
-        # new part
-        # weight[torch.arange(bs).repeat_interleave(nb_idxs[0].size(0)), torch.flatten(nb_idxs)] = 1.0
-
+        # setting weights only for neighbours
         weight[torch.arange(bs).unsqueeze(1).repeat_interleave(nb_idxs[0].size(0)), torch.flatten(nb_idxs)] = 1.0
-
         weight=weight.unsqueeze(-1).expand(-1, -1, v_len) # bs,6513,16
         weight=weight.reshape(bs, -1)
         sample_idx=torch.multinomial(weight, num_samples=v_len, replacement=True)

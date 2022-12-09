@@ -1,12 +1,11 @@
-import torch
-import numpy as np
 import argparse
-import os
-import pickle
-import json
 from utils import *
+import datasets
 
 parser = argparse.ArgumentParser(description="MSPAN logger")
+parser.add_argument("-is_eval", action="store_true")
+parser.add_argument("-best_model_path", type=str, default='')
+parser.add_argument("-file_prefix", type=str, default='')
 parser.add_argument("-v", type=str, required=True, help="version")
 parser.add_argument('-ans_num', default=5, type=int)
 
@@ -30,6 +29,7 @@ parser.add_argument("-neg", type=int, help="#neg_sample", default=5)
 parser.add_argument("-b", type=float, action="store", help="kl loss multiplier", default=0.0125)
 parser.add_argument("-tau", type=float, help="temperature for nce loss", default=0.1)
 parser.add_argument("-tau_gumbel", type=float, help="temperature for gumbel_softmax", default=0.9)
+
 args = parser.parse_args()
 set_gpu_devices(args.gpu)
 set_seed(999)
@@ -37,14 +37,58 @@ set_seed(999)
 from torch import nn, optim
 import torch.nn.functional as F
 from torch.utils.data import DataLoader
-from DataLoader import VideoQADataset
+from DataLoader import VideoQADataset, VideoRepresentationDataset
 from networks.network import VideoQANetwork
-from torch.optim.lr_scheduler import ReduceLROnPlateau, StepLR, MultiStepLR
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 import eval_mc
 from loss import InfoNCE
 
 
+def get_faiss_indexed_dataset(feats):
+    hf_feats = {'vid_idx': [], 'embedding': []}
+    for idx, feat in enumerate(feats):
+        hf_feats['vid_idx'].append(idx)
+        hf_feats['embedding'].append(np.mean(feat, axis=0, dtype='float32'))
+    
+    faiss_dataset = datasets.Dataset.from_dict(hf_feats)
+    faiss_dataset.add_faiss_index(column='embedding')
+    return faiss_dataset
+
+
+def get_next_epoch_nb_idxs(model, train_loader, num_neighbours=3):
+    train_dataset = train_loader.dataset
+    loader = DataLoader(VideoRepresentationDataset(train_dataset.feats, train_dataset.vid2idx, train_dataset.idx2vid, mode='train'), shuffle=False, batch_size=128)
+    model.eval()
+    vid_encoder = model.vid_encoder
+    vid_encoder.eval()
+    # new_features = np.array([[[-1]] for _ in range(len(train_dataset.feats))])
+    num_vids = len(train_dataset.feats)
+    seq_len = train_dataset.feats[train_dataset.idx2vid[0]].shape[0]
+    new_features = np.empty((num_vids, seq_len, vid_encoder.dim_hidden))
+    
+
+    for iter, inputs in enumerate(loader):
+        vid_names, vid_idxs, vid_features = inputs
+        vid_features = torch.tensor(vid_features).to(device)
+        vid_features = vid_encoder(vid_features, extract_vid_feats=True).detach().cpu().numpy()
+        new_features[vid_idxs] = vid_features
+        
+    
+    faiss_dataset = get_faiss_indexed_dataset(new_features)
+    nb_idxs = np.empty((num_vids, num_neighbours))
+    for idx in range(len(new_features)):
+        scores, nbs = faiss_dataset.get_nearest_examples('embedding', np.mean(new_features[idx], axis=0, dtype='float32'), k=num_neighbours+1)
+        nb = np.array(nbs['vid_idx'][1:])
+        nb_idxs[idx] = nb
+    return nb_idxs
+
+
 def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
+    
+    if epoch != 1:
+        all_nbs = get_next_epoch_nb_idxs(model, train_loader)
+        all_nbs = torch.tensor(all_nbs).to(device)
+    
     model.train()
     total_step = len(train_loader)
     epoch_xe_loss = 0.0
@@ -53,10 +97,11 @@ def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
     prediction_list = []
     answer_list = []
     epoch_print_dict = []
+
     for iter, inputs in enumerate(train_loader):
-        # videos, qas, qa_lengths, vid_idx, ans, qns_key = inputs
-        input_batch = list(map(lambda x: x.to(device), inputs[:-1]))
-        videos, qas, qas_lengths, vid_idx, ans, neighbours = input_batch
+        # videos, qas, qa_lengths, vid_idx, ans, qns_key, nb_idxs = inputs
+        input_batch = list(map(lambda x: x.to(device), inputs[:-2]))
+        videos, qas, qas_lengths, vid_idx, ans = input_batch
 
         # #mix-up
         lam_1 = np.random.beta(args.a, args.a)
@@ -64,8 +109,15 @@ def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
         index = torch.randperm(videos.size(0))
         targets_a, targets_b = ans, ans[index]
 
+        if epoch == 1:
+            neighbours = inputs[-1]
+        else:
+            neighbours1 = all_nbs[vid_idx]
+            neighbours2 = all_nbs[index]
+            neighbours = torch.cat([neighbours1, neighbours2], axis=1)
+
         out, out_anc, out_pos, out_neg, iter_print_element, temp_mem_bank_idx = model(videos, qas, qas_lengths, vid_idx,
-                                                                                      lam_1, lam_2, index, ans)
+                                                                                      lam_1, lam_2, index, ans, neighbours.to(dtype=torch.long, device=device))
         iter_print_element['ans_idx'] = [
             [targets_a[idx].detach().cpu().numpy().tolist(), targets_b[idx].detach().cpu().numpy().tolist()] for idx in
             temp_mem_bank_idx]
@@ -88,7 +140,7 @@ def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
         epoch_loss += loss.item()
         prediction = out[:, :5].max(-1)[1]  # bs,
         prediction_list.append(prediction)
-        answer_list.append(inputs[-2])
+        answer_list.append(inputs[-3])
 
         if iter % 80 == 0:
             iter_print_element['epoch'] = epoch
@@ -113,7 +165,7 @@ def eval(model, val_loader, device):
             out = model(*input_batch)
             prediction = out.max(-1)[1]  # bs,
             prediction_list.append(prediction)
-            answer_list.append(inputs[-2])
+            answer_list.append(inputs[-3])
 
     predict_answers = torch.cat(prediction_list, dim=0).long().cpu()
     ref_answers = torch.cat(answer_list, dim=0).long()
@@ -133,7 +185,7 @@ def predict(model, test_loader, device):
     with torch.no_grad():
         for iter, inputs in enumerate(test_loader):
             input_batch = list(map(lambda x: x.to(device), inputs[:3]))
-            answers, qns_keys = inputs[-2], inputs[-1]
+            answers, qns_keys = inputs[-3], inputs[-2]
 
             out = model(*input_batch)
             prediction = out.max(-1)[1]  # bs,
@@ -184,6 +236,8 @@ def update_prints(prints: list, train_data):
 if __name__ == "__main__":
 
     logger, sign = logger(args)
+    if args.file_prefix != '':
+        sign = args.file_prefix
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'device chosen: {device}')
     # set data path
@@ -215,53 +269,61 @@ if __name__ == "__main__":
         'tau_gumbel': args.tau_gumbel,
         'logger': logger
     }
-
-    best_model_path = '/home/ec2-user/checkpoint_2.16_21.11.58.ckpt'
+    
     model = VideoQANetwork(**model_kwargs)
-    model.load_state_dict(torch.load(best_model_path))
-    optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
-    scheduler = ReduceLROnPlateau(optimizer, 'max', factor=0.5, patience=5, verbose=True)
-    # scheduler = StepLR(optimizer, step_size=5, gamma=0.5)
-    # scheduler = MultiStepLR(optimizer, milestones=[10,15,20,25], gamma=0.5)
     model.to(device)
-    xe = nn.KLDivLoss(reduction='batchmean').to(device)  # nn.CrossEntropyLoss().to(device)
-    cl = InfoNCE(temperature=args.tau, negative_mode='paired')
+    if args.is_eval:
+        # predict with best model
+        best_model_path = args.best_model_path
+        model.load_state_dict(torch.load(best_model_path))
+        test_acc=eval(model, test_loader, device)
+        logger.debug("Test acc{:.2f}".format(test_acc))
 
-    # train & val
-    print('training...')
-    best_eval_score = 0.0
-    best_epoch = 1
-    epoch_prints = []
-    for epoch in range(1, args.epoch + 1):
-        train_loss, train_xe_loss, train_nce_loss, train_acc, epoch_print = train(model, optimizer, train_loader, xe,
-                                                                                  cl, device, epoch=epoch)
-        eval_score = eval(model, val_loader, device)
-        logger.debug(
-            "==>Epoch:[{}/{}][lr: {}][Train Loss: {:.4f} XE: {:.4f} NCE: {:.4f} Train acc: {:.2f} Val acc: {:.2f}]".
-            format(epoch, args.epoch, optimizer.param_groups[0]['lr'], train_loss, train_xe_loss, train_nce_loss,
-                   train_acc, eval_score))
-        scheduler.step(eval_score)
-        if eval_score > best_eval_score:
-            best_eval_score = eval_score
-            best_epoch = epoch
-            best_model_path = './models/best_model-{}.ckpt'.format(sign)
-            torch.save(model.state_dict(), best_model_path)
+        results=predict(model, test_loader, device)
+        eval_mc.accuracy_metric(test_data.sample_list_file, results)
+        result_path= f'./prediction/{sign}_{test_loader.mode}.json'
+        save_file(results, result_path)
+    else:
+        try:
+            optimizer = optim.Adam(model.parameters(), lr=args.lr, weight_decay=args.wd)
+            scheduler = ReduceLROnPlateau(optimizer, 'max', factor=0.5, patience=5, verbose=True)
+            # scheduler = StepLR(optimizer, step_size=5, gamma=0.5)
+            # scheduler = MultiStepLR(optimizer, milestones=[10,15,20,25], gamma=0.5)
+        
+            xe = nn.KLDivLoss(reduction='batchmean').to(device)  # nn.CrossEntropyLoss().to(device)
+            cl = InfoNCE(temperature=args.tau, negative_mode='paired')
 
-        epoch_prints.extend(epoch_print)
+            # train & val
+            print('training...')
+            best_eval_score = 0.0
+            best_epoch = 1
+            epoch_prints = []
+            for epoch in range(1, args.epoch + 1):
+                train_loss, train_xe_loss, train_nce_loss, train_acc, epoch_print = train(model, optimizer, train_loader, xe,
+                                                                                        cl, device, epoch=epoch)
+                eval_score = eval(model, val_loader, device)
+                logger.debug(
+                    "==>Epoch:[{}/{}][lr: {}][Train Loss: {:.4f} XE: {:.4f} NCE: {:.4f} Train acc: {:.2f} Val acc: {:.2f}]".
+                    format(epoch, args.epoch, optimizer.param_groups[0]['lr'], train_loss, train_xe_loss, train_nce_loss,
+                        train_acc, eval_score))
+                scheduler.step(eval_score)
+                if eval_score > best_eval_score:
+                    best_eval_score = eval_score
+                    best_epoch = epoch
+                    best_model_path = './models/{}.ckpt'.format(sign)
+                    torch.save(model.state_dict(), best_model_path)
 
-    with open(f'./qualitative_examples.json', 'w') as jsonf:
-        p = update_prints(epoch_prints, train_data)
-        print(p)
-        json.dump(p, jsonf)
+                epoch_prints.extend(epoch_print)
 
-    logger.debug("Epoch {} Best Val acc{:.2f}".format(best_epoch, best_eval_score))
+            with open(f'./{sign}_{epoch}_qualitative_examples.json', 'w') as jsonf:
+                p = update_prints(epoch_prints, train_data)
+                print(p)
+                json.dump(p, jsonf)
 
-    # predict with best model
-    # model.load_state_dict(torch.load(best_model_path))
-    # test_acc=eval(model, test_loader, device)
-    # logger.debug("Test acc{:.2f}".format(test_acc))
-
-    # results=predict(model, test_loader, device)
-    # eval_mc.accuracy_metric(test_data.sample_list_file, results)
-    # result_path= './prediction/{}.json'.format(sign)
-    # save_file(results, result_path)
+            logger.debug("Epoch {} Best Val acc{:.2f}".format(best_epoch, best_eval_score))
+        except KeyboardInterrupt:
+            logger.error("Keyboard interrupt, saving qualitative examples")
+            with open(f'./{sign}_{epoch}_qualitative_examples.json', 'w') as jsonf:
+                p = update_prints(epoch_prints, train_data)
+                print(p)
+                json.dump(p, jsonf)   
