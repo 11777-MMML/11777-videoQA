@@ -23,7 +23,7 @@ class NextQADataset(data.Dataset):
         self.text_clip = args.text_clip
         self.num_classes = 5
         if self.text_clip:
-            self.video_features_path = os.path.join(self.video_features_path, f'clip_vision_{self.clip_frames}_feats')
+            self.video_features_path = os.path.join(self.video_features_path, f'clip_{self.clip_frames}_feats')
         else:
             self.text_features_file = os.path.join(self.text_features_path, f'bert_ft_{self.split}.h5')
             self.text_features = h5py.File(self.text_features_file)['feat']

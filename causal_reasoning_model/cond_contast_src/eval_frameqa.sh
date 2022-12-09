@@ -1,17 +1,16 @@
 eval "$(conda shell.bash hook)"
-python train.py \
+python eval_frame_qa.py \
 --video_features_path /home/ubuntu/11777-videoQA/causal_reasoning_model/data \
 --text_features_path ./data/qas_bert \
 --csv_dataset_path /home/ubuntu/11777-videoQA/next-dataset \
---batch_size 256 \
+--batch_size 512 \
 --clip_frames 80 \
---lr 5e-5 \
 --n_layers 2 \
 --n_heads 2 \
 --text_clip \
 --n_cands 0 \
---exp_name exp_qva_frozen_80clips_shuffle_1 \
---seed 0 \
+--exp_name exp_qva_frozen_80clips \
+--checkpoint checkpoints/exp_qva_frozen_80clips_shuffle/best_atp_34.pt \
 --use_text_cands \
 --num_workers 4
 

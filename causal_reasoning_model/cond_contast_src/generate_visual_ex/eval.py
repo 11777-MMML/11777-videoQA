@@ -19,8 +19,8 @@ from torch import nn
 from torch.utils.data.dataloader import default_collate
 from torch.utils.tensorboard import SummaryWriter
 from NExTQA import TYPE_MAP, A_CHOICES
-from discord import SyncWebhook
 import shutil
+import pickle
 
 ANS_CANDS = ["question", "a0", "a1", "a2", "a3", "a4"] #+ [f"{choice}_cand{k}" for choice in A_CHOICES for k in range(5)]
 
@@ -88,24 +88,13 @@ class TextModel(nn.Module):
 
 
 def main(args):
-    if args.exp_name is None:
-        writer = SummaryWriter()
-        model_dir = os.path.join("checkpoints", os.path.basename(writer.log_dir))
-    else:
-        if os.path.exists(os.path.join("runs", args.exp_name)):
-            shutil.rmtree(os.path.join("runs", args.exp_name))
-        if os.path.exists(os.path.join("checkpoints", args.exp_name)):
-            shutil.rmtree(os.path.join("checkpoints", args.exp_name))
-        writer = SummaryWriter(log_dir=os.path.join("runs", args.exp_name))
-        model_dir = os.path.join("checkpoints", args.exp_name)
         
     seed_everything(args.seed)
-    webhook = SyncWebhook.from_url("https://discord.com/api/webhooks/1044667805301227611/y4Cl5nMja1920RvwNv8BIQteWDRsOCTT5Z19nEER-RIiImklwEiFYPIbRbULGzgz189M")
     config = Config.from_args(args)
     device = torch.device("cuda:0" if args.gpus > 0 else "cpu")
     frame_qa_model = FrameQAReasonModel(config).to(device)
-    pytorch_total_params = sum(p.numel() for p in frame_qa_model.parameters() if p.requires_grad)
-    print(f"Model has a total of {pytorch_total_params} trainable parameters")
+    checkpoint_model = torch.load(args.checkpoint)
+    frame_qa_model.load_state_dict(checkpoint_model)
 
     # margin_loss = nn.TripletMarginLoss()
     # cross_entropy = nn.CrossEntropyLoss()
@@ -138,149 +127,58 @@ def main(args):
         
 
     # create datasets and dataloaders
-    dset_train = NExTQA.NextQADataset(args, split="train")
     dset_val = NExTQA.NextQADataset(args, split="val")
-    dldr_train = torch.utils.data.DataLoader(dset_train,
-                                             batch_size=args.batch_size,
-                                             shuffle=True,
-                                             num_workers=args.num_workers,
-                                             collate_fn=default_collate)
+    
     dldr_val   = torch.utils.data.DataLoader(dset_val,
                                              batch_size=args.batch_size,
                                              shuffle=False,
                                              num_workers=args.num_workers,
                                              collate_fn=default_collate)
 
-    # create optimizer
-    parameters = list(frame_qa_model.parameters())
-    if train_text_embeddings:
-        parameters += list(text_model.parameters())
-    if args.wd > 0.0:
-        optim = torch.optim.AdamW(parameters, 
-                                  lr=args.lr, weight_decay=args.wd)
-    else:
-        optim = torch.optim.Adam(parameters, lr=args.lr) # list(clip_text_model.parameters()) + 
-
-    count = 0
-    best = 0
-    # simple training loop (for illustrative purposes)
-    for epoch_i in range(args.epochs):
-        # train epoch
-        frame_qa_model.train()
-        
-        for i, batch in enumerate(dldr_train):
+    frame_qa_model.eval()
+    vis_scores = []
+    ans_scores = []
+    y_gts = []
+    y_preds = []
+    q_ids = []
+    for i, batch in enumerate(dldr_val):
+        with torch.no_grad():
             if args.text_clip:
-                if train_text_embeddings:
-                    text_model.train()
-                    batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
-                else:
-                    with torch.no_grad():
-                        batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
-
-            batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)
-            x_vis_seq, x_txt_qa, y_gt, q_type, _ = batch
-            batch_size, _, _ = x_vis_seq.shape
-            # refactored the "forward pass" here into an example code snippet in atp.py; feel free to modify/replace here!
-            y_pred, x_question, x_ans, x_cands = frame_qa_model(x_vis_seq, x_txt_qa)
-
-            # x_ans = x_ans.permute(1, 0, 2)
-            # # x_cands = x_cands.permute(1, 0, 2)
-            # x_question = x_question.permute(1, 0, 2)
+                text_model.eval()
+                batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
+            batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)                
+            x_vis_seq, x_txt_qa, y_gt, q_types, q_id = batch
+            y_pred, x_vis, x_question, x_ans = frame_qa_model(x_vis_seq, x_txt_qa, mode="val")
+            # y_pred = logits.permute(1, 0, 2).squeeze()
             y_pred = y_pred.transpose(0, 1)
+            x_vis = x_vis.permute(1, 0, 2)
+            x_question = x_question.permute(1, 0, 2)
+            x_ans = x_ans.permute(1, 0, 2)
 
+            vis_scores.append(torch.bmm(x_question, x_vis.transpose(1, 2)).squeeze().detach().cpu().numpy())
+            ans_scores.append(torch.bmm(x_question, x_ans.transpose(1, 2)).squeeze().detach().cpu().numpy())
 
-            # gt_mask = (F.one_hot(y_gt, num_classes=config.n_answers) > 0)
-            # cand_mask = torch.repeat_interleave(gt_mask, config.n_answers, dim=1)
+            y_gts.append(y_gt.detach().cpu().numpy())
+            y_preds.append(y_pred.argmax(dim=-1).detach().cpu().numpy())
+            q_ids.append(np.array(q_id))
 
-            # positives = x_ans[gt_mask].reshape(batch_size, -1, config.d_model_ff)
-            # negatives = x_ans[~gt_mask].reshape(batch_size, -1, config.d_model_ff)
-
-            # perm = torch.randperm(negatives.size(1))
-            # perm = torch.arange(negatives.size(1)).expand(batch_size, -1)
-            # perm = perm[:,torch.randperm(perm.size()[1])]
-            # print(perm)
-            # idx = torch.randint(low=0, high=negatives.size(1), size=(batch_size,1,1)).expand(-1,-1,config.d_model_ff).to(device)
             
-            # print(perm[:, :positives.size(1)].shape)
-            # negatives = negatives.gather(1, idx)
-            # negatives = negatives[:, idx, :]
-
-            # anchor = x_question
             
-            ce_loss = F.cross_entropy(y_pred, y_gt)
-            # ce_loss = None
-            # for idx in range(negatives.size(1)):
-            #     if ce_loss is None:
-            #         ce_loss = margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
-            #     else:
-            #         ce_loss = ce_loss + margin_loss(anchor, positives, negatives[:, idx].unsqueeze(1))
+    vis_scores = np.concatenate(vis_scores)
+    ans_scores = np.concatenate(ans_scores)
+    y_gts = np.concatenate(y_gts)
+    y_preds = np.concatenate(y_preds)
+    q_ids = np.concatenate(q_ids)
 
-            loss = ce_loss #+ triplet_loss
+    
 
-            accs = (y_pred.argmax(dim=-1) == y_gt).float()
-
-            d_accs = accs[q_type == TYPE_MAP["D"]]
-            c_accs = accs[q_type == TYPE_MAP["C"]]
-            t_accs = accs[q_type == TYPE_MAP["T"]]
-
-            frame_qa_model.zero_grad(set_to_none=True)
-            if train_text_embeddings:
-                text_model.zero_grad()
-            loss.backward()
-
-            # do logging stuff with accs, selected_frames, masks, etc. For example:
-            log(f"train: epoch{epoch_i}, iter{i}: loss = {loss.item()}, ce_loss = {ce_loss.item()}, triplet_loss = {ce_loss.item()}, acc = {accs.mean().item()}, d_acc = {d_accs.mean().item()}, c_acc = {c_accs.mean().item()}, t_acc = {t_accs.mean().item()}")
-            writer.add_scalar("Loss/train", loss.item(), count)
-            writer.add_scalar("Accu/train", accs.mean().item(), count)
-            writer.add_scalar("d_Accu/train", d_accs.mean().item(), count)
-            writer.add_scalar("t_Accu/train", t_accs.mean().item(), count)
-            writer.add_scalar("c_Accu/train", c_accs.mean().item(), count)
-            
-            if args.grad_clip_val > 0.0:
-                nn.utils.clip_grad_norm_(parameters, args.grad_clip_val)
-            optim.step()
-
-            count += 1
-
-        # val epoch
-        frame_qa_model.eval()
-        all_val_accs = []
-        all_val_types = []
-        for i, batch in enumerate(dldr_val):
-            with torch.no_grad():
-                if args.text_clip:
-                    text_model.eval()
-                    batch = process_video_text_features(batch, tokenizer, text_model, device, model_type, visual_projector, text_projector, args.use_text_query)
-                batch = process_batch(batch, set_to_device=device, replace_empty_with_none=True)                
-                x_vis_seq, x_txt_qa, y_gt, q_types, _ = batch
-                y_pred, _, _, _ = frame_qa_model(x_vis_seq, x_txt_qa, mode="val")
-                # y_pred = logits.permute(1, 0, 2).squeeze()
-                y_pred = y_pred.transpose(0, 1)
-                
-                accs = (y_pred.argmax(dim=-1) == y_gt).float()
-                all_val_accs.append(accs)
-                all_val_types.append(q_types)
-
-        all_val_accs = torch.cat(all_val_accs) 
-        all_val_types = torch.cat(all_val_types)
-        overall_acc = all_val_accs.mean().item()
-        d_acc = all_val_accs[all_val_types == TYPE_MAP["D"]].mean().item()
-        t_acc = all_val_accs[all_val_types == TYPE_MAP["T"]].mean().item()
-        c_acc = all_val_accs[all_val_types == TYPE_MAP["C"]].mean().item()
-        log(f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}")
-        msg = f"val: epoch{epoch_i}: overall_acc = {overall_acc}, d_acc: {d_acc}, t_acc: {t_acc}, c_acc: {c_acc}"
-        webhook.send(msg)
-        writer.add_scalar("Accu/val", overall_acc, epoch_i)
-        writer.add_scalar("d_Accu/val", d_acc, epoch_i)
-        writer.add_scalar("t_Accu/val", t_acc, epoch_i)
-        writer.add_scalar("c_Accu/val", c_acc, epoch_i)
-
-        if overall_acc > best:
-            best = overall_acc
-            if os.path.exists(os.path.dirname(os.path.join(model_dir, f'best_atp_{epoch_i}.pt'))) == False:
-                os.makedirs(os.path.dirname(os.path.join(model_dir, f'best_atp_{epoch_i}.pt')), exist_ok=True)
-            torch.save(frame_qa_model.state_dict(), os.path.join(model_dir, f'best_atp_{epoch_i}.pt'))
-    return 0
+    assert len(y_gts) == len(y_preds) == len(ans_scores) == len(vis_scores) == len(q_ids)
+    results = {}
+    for (q_id, y_gt, y_pred, ans_score, vis_score) in zip(q_ids, y_gts, y_preds, ans_scores, vis_scores):
+        results[q_id] = {"answer": y_gt, "prediction": y_pred, "ans_score": ans_score, "vis_score": vis_score}
+    with open("results.pkl", "wb") as f:
+        pickle.dump(results, f) 
+    
 
 
 # parse args and invoke main()
@@ -318,6 +216,7 @@ if __name__ == "__main__":
     add_bool_arg(parser, "use_ste", True, help="see ATPConfig")
     parser.add_argument('--sel_dropout', default=0.0, type=float, help="see ATPConfig")
     parser.add_argument('--d_input', default=512, type=int, help="see ATPConfig")
+    parser.add_argument("--checkpoint", type=str, help="checkpoint path")
     
     # I/O and data parameters
     parser.add_argument("--video_features_path", type=str, help="Path to video features")
@@ -325,7 +224,6 @@ if __name__ == "__main__":
     parser.add_argument("--csv_dataset_path", type=str, help="Path to csv dataset")
 
     # Model path parameters
-    parser.add_argument("--exp_name", type=str, default=None, help="Path to model checkpoints and run logs, default will be set to timestamp based path")
 
     parser.add_argument('--n_frames', default=8, type=int, help="number of frames sampled for input; see data.py")
 

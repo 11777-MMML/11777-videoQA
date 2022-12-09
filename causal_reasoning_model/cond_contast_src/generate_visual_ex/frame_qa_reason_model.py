@@ -12,7 +12,7 @@ from enum import IntEnum
 class Config:
     # ATPEncoder params
     n_layers: int = 8
-    frame_input_dim = 768
+    frame_input_dim = 512
     n_frames: int = 16
     qa_input_dim = 512
     n_heads: int = 8
@@ -102,7 +102,7 @@ class FrameQAReasonLayer(nn.Module):
         self.answer_attention = nn.MultiheadAttention(self.d_model, config.n_heads)
 
     def forward(self, x):
-        vision_inputs, question_inputs, answer_inputs = x
+        vision_inputs, question_inputs, answer_inputs, _ = x
 
         # vision_inputs = self.vision_pre_norm(vision_inputs)
         # question_inputs = self.question_pre_norm(question_inputs)
@@ -118,19 +118,14 @@ class FrameQAReasonLayer(nn.Module):
         q_condition, _ = self.question_attention(question_inputs, av_inputs, av_inputs)
         a_condition, _ = self.answer_attention(answer_inputs, vq_inputs, vq_inputs)
 
-        # vision_text_condition, _ = self.vision_text_attention(vision_inputs, text_inputs, text_inputs)
-        # vision_inputs = vision_inputs + vision_text_condition
-        # vision_inputs = self.vision_encoder_layer(vision_inputs)
-        # text_vision_condition, _ = self.text_vision_attention(text_inputs, vision_inputs, vision_inputs)
-        # text_inputs = text_inputs + text_vision_condition
-        # text_inputs = self.text_encoder_layer(text_inputs)
-        # qa_inputs = torch.cat((q_input, a_inputs), dim=0)
+        
+
         vision_inputs  = self.vision_encoder_layer(vision_inputs + v_condition)
         question_inputs = self.question_encoder_layer(question_inputs + q_condition)
         answer_inputs = self.answer_encoder_layer(answer_inputs + a_condition)
 
         # vision_inputs 
-        return (vision_inputs, question_inputs, answer_inputs)
+        return (vision_inputs, question_inputs, answer_inputs, (v_condition, q_condition, answer_inputs))
 
     # def forward(self, x):
     #     x = self.encoder_layer(x)
@@ -205,10 +200,10 @@ class FrameQAReasonModel(nn.Module):
         vision_cls_ids = torch.tensor(vision_cls_ids, dtype=torch.long, device=x_vis_seq.device).unsqueeze(-1)
         x_vis_seq = x_vis_seq + self.modality_embedding_layer(vision_cls_ids)
 
-        if "mode" not in kwargs or kwargs["mode"] not in ["val", "test"]:
-            x_vis_seq = x_vis_seq.permute(1, 0, 2)
-            x_vis_seq = shufflerow(x_vis_seq, 1, x_vis_seq.device)[:, :self.config.n_frames]
-            x_vis_seq = x_vis_seq.permute(1, 0, 2)
+        # if "mode" not in kwargs or kwargs["mode"] not in ["val", "test"]:
+        #     x_vis_seq = x_vis_seq.permute(1, 0, 2)
+        #     x_vis_seq = shufflerow(x_vis_seq, 1, x_vis_seq.device)[:, :self.config.n_frames]
+        #     x_vis_seq = x_vis_seq.permute(1, 0, 2)
 
    
 
@@ -241,11 +236,13 @@ class FrameQAReasonModel(nn.Module):
 
         # x_vis_ans = x_vis_ans + self.modality_embedding_layer(class_ids)
 
-        x_input = (x_vis_seq, x_question, x_ans) # torch.cat((x_vis_seq, x_txt_qa), dim=0)
+        x_input = (x_vis_seq, x_question, x_ans, None) # torch.cat((x_vis_seq, x_txt_qa), dim=0)
 
         # x_input = (x_question, x_vis_ans)
 
-        x_vis, x_question, x_ans = self.reasoning_module(x_input)
+        x_vis, x_question, x_ans, _ = self.reasoning_module(x_input)
+
+        x_vis_rep, x_que_rep, x_ans_rep = (x_vis, x_question, x_ans)
 
         x_vis = self.final_vision_proj(self.vision_post_norm(x_vis))
         x_question = self.final_question_proj(self.question_post_norm(x_question))
@@ -279,4 +276,4 @@ class FrameQAReasonModel(nn.Module):
         # logits = scores.mean(dim=1)
 
         
-        return logits, x_question, x_ans, x_cands
+        return logits, x_vis_rep, x_que_rep, x_ans_rep
