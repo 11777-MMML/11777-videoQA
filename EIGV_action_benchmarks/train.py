@@ -27,6 +27,7 @@ parser.add_argument('--wd', default=0, type=float)
 parser.add_argument('--drop', default=0.3, type=float)
 parser.add_argument('--logs', default=0, type=int)
 parser.add_argument('--bert_type', default='next', choices=['next', 'action', 'caption', 'action_caption'], type=str)
+parser.add_argument('--video_type', default='next', choices=['next', 'ground'], type=str)
 parser.add_argument("--feat_path", type=str, help="feature path", default='./action_caption_dataset/')
 parser.add_argument("--sample_list_path", type=str, help="csv paths", default='./action_caption_dataset/CSV')
 
@@ -152,14 +153,14 @@ if __name__=="__main__":
     feat_path = args.feat_path
     sample_list_path = args.sample_list_path
 
-    train_data = VideoQADataset(sample_list_path, feat_path, 'train', args.bert_type)
+    train_data = VideoQADataset(sample_list_path, feat_path, 'train', args.bert_type, args.video_type)
     mem_bank_path = train_data.vid_feat_file
     train_loader = DataLoader(train_data, batch_size=args.bs, shuffle=True, num_workers=args.num_workers, pin_memory=True)
 
-    val_data = VideoQADataset(sample_list_path, feat_path, 'val', args.bert_type)
+    val_data = VideoQADataset(sample_list_path, feat_path, 'val', args.bert_type, args.video_type)
     val_loader = DataLoader(val_data, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
-    test_data = VideoQADataset(sample_list_path, feat_path, 'test', args.bert_type)
+    test_data = VideoQADataset(sample_list_path, feat_path, 'test', args.bert_type, args.video_type)
     test_loader = DataLoader(test_data, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # model

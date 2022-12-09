@@ -21,7 +21,7 @@ class VideoQADataset(Dataset):
                 [feat]:feature (34132, 5, 37, 768)
     """
 
-    def __init__(self, sample_list_path, video_feature_path, mode, bert_type):
+    def __init__(self, sample_list_path, video_feature_path, mode, bert_type, video_type):
         self.video_feature_path = video_feature_path
         self.sample_list_file = osp.join(sample_list_path, '{}.csv'.format(mode))
         self.sample_list = load_file(self.sample_list_file)
@@ -39,9 +39,11 @@ class VideoQADataset(Dataset):
         elif bert_type == "next":
             print(bert_type)
             self.bert_file = osp.join(video_feature_path, 'qas_bert/bert_ft_{}.h5'.format(mode))
-
-        self.vid_feat_file = osp.join(video_feature_path, 'vid_feat/app_mot_{}.h5'.format(mode))
-        # self.vid_feat_file = osp.join(video_feature_path, 'video_feats/{}_clip_32.h5'.format(mode))
+        
+        if video_type == 'next':
+            self.vid_feat_file = osp.join(video_feature_path, 'vid_feat/app_mot_{}.h5'.format(mode))
+        elif video_type == 'ground':
+            self.vid_feat_file = osp.join(video_feature_path, 'video_feats/{}_clip_32.h5'.format(mode))
         
         print('Load {}...'.format(self.vid_feat_file))
         self.feats = {}
