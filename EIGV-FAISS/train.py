@@ -1,35 +1,47 @@
 import argparse
 from utils import *
 import datasets
+import torch
+import numpy as np
+import os
+import pickle
+import json
+from torch.utils.tensorboard import SummaryWriter
+from tqdm import tqdm
 
 parser = argparse.ArgumentParser(description="MSPAN logger")
-parser.add_argument("-is_eval", action="store_true")
-parser.add_argument("-best_model_path", type=str, default='')
-parser.add_argument("-file_prefix", type=str, default='')
-parser.add_argument("-v", type=str, required=True, help="version")
-parser.add_argument('-ans_num', default=5, type=int)
+parser.add_argument("--v", type=str, required=False, default='0', help="version")
+parser.add_argument('--ans_num', default=5, type=int)
+parser.add_argument("--is_eval", action="store_true", default=False)
+parser.add_argument("--best_model_path", type=str, default='')
+parser.add_argument("--file_prefix", type=str, default='')
 
-parser.add_argument('-num_frames', default=16, type=int)
-parser.add_argument('-word_dim', default=768, type=int)
-parser.add_argument('-module_dim', default=512, type=int)
-parser.add_argument('-app_pool5_dim', default=2048, type=int)
-parser.add_argument('-motion_dim', default=2048, type=int)
+parser.add_argument('--num_frames', default=32, type=int)
+parser.add_argument('--word_dim', default=768, type=int)
+parser.add_argument('--module_dim', default=512, type=int)
+parser.add_argument('--app_pool5_dim', default=256, type=int)
+parser.add_argument('--motion_dim', default=256, type=int)
+parser.add_argument('--num_neighbours', default=3, type=int)
 
-parser.add_argument('-gpu', default=0, type=int)
-parser.add_argument('-epoch', default=35, type=int)
-parser.add_argument('-num_workers', default=8, type=int)
-parser.add_argument('-bs', default=128, type=int)
-parser.add_argument('-lr', default=5e-5, type=float)
-parser.add_argument('-wd', default=0, type=float)
-parser.add_argument('-drop', default=0.3, type=float)
+parser.add_argument('--gpu', default=0, type=int)
+parser.add_argument('--epoch', default=35, type=int)
+parser.add_argument('--num_workers', default=8, type=int)
+parser.add_argument('--bs', default=128, type=int)
+parser.add_argument('--lr', default=5e-5, type=float)
+parser.add_argument('--wd', default=0, type=float)
+parser.add_argument('--drop', default=0.3, type=float)
+parser.add_argument('--logs', default=0, type=int)
+parser.add_argument('--bert_type', default='next', choices=['next', 'action', 'caption', 'action_caption'], type=str)
+parser.add_argument('--video_type', default='next', choices=['next', 'ground'], type=str)
+parser.add_argument("--feat_path", type=str, help="feature path", default='./action_caption_dataset/')
+parser.add_argument("--sample_list_path", type=str, help="csv paths", default='./action_caption_dataset/CSV')
 
-parser.add_argument("-a", type=float, help="alpha", default=0.1)
-parser.add_argument("-a2", type=float, help="alpha", default=1)
-parser.add_argument("-neg", type=int, help="#neg_sample", default=5)
-parser.add_argument("-b", type=float, action="store", help="kl loss multiplier", default=0.0125)
-parser.add_argument("-tau", type=float, help="temperature for nce loss", default=0.1)
-parser.add_argument("-tau_gumbel", type=float, help="temperature for gumbel_softmax", default=0.9)
-
+parser.add_argument("--a", type=float, help="alpha", default=0.1)
+parser.add_argument("--a2", type=float, help="alpha", default=1)
+parser.add_argument("--neg", type=int, help="#neg_sample", default=5) 
+parser.add_argument("--b", type=float, action="store", help="kl loss multiplier", default=0.0125) 
+parser.add_argument("--tau", type=float, help="temperature for nce loss", default=0.1) 
+parser.add_argument("--tau_gumbel", type=float, help="temperature for gumbel_softmax", default=0.9) 
 args = parser.parse_args()
 set_gpu_devices(args.gpu)
 set_seed(999)
@@ -67,7 +79,7 @@ def get_next_epoch_nb_idxs(model, train_loader, num_neighbours=3):
     new_features = np.empty((num_vids, seq_len, vid_encoder.dim_hidden))
     
 
-    for iter, inputs in enumerate(loader):
+    for iter, inputs in enumerate(tqdm(loader)):
         vid_names, vid_idxs, vid_features = inputs
         vid_features = torch.tensor(vid_features).to(device)
         vid_features = vid_encoder(vid_features, extract_vid_feats=True).detach().cpu().numpy()
@@ -85,7 +97,7 @@ def get_next_epoch_nb_idxs(model, train_loader, num_neighbours=3):
 
 def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
     
-    if epoch != 1:
+    if epoch > 1:
         all_nbs = get_next_epoch_nb_idxs(model, train_loader)
         all_nbs = torch.tensor(all_nbs).to(device)
     
@@ -98,7 +110,7 @@ def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
     answer_list = []
     epoch_print_dict = []
 
-    for iter, inputs in enumerate(train_loader):
+    for iter, inputs in enumerate(tqdm(train_loader)):
         # videos, qas, qa_lengths, vid_idx, ans, qns_key, nb_idxs = inputs
         input_batch = list(map(lambda x: x.to(device), inputs[:-2]))
         videos, qas, qas_lengths, vid_idx, ans = input_batch
@@ -116,8 +128,7 @@ def train(model, optimizer, train_loader, xe, nce, device, epoch=0):
             neighbours2 = all_nbs[index]
             neighbours = torch.cat([neighbours1, neighbours2], axis=1)
 
-        out, out_anc, out_pos, out_neg, iter_print_element, temp_mem_bank_idx = model(videos, qas, qas_lengths, vid_idx,
-                                                                                      lam_1, lam_2, index, ans, neighbours.to(dtype=torch.long, device=device))
+        out, out_anc, out_pos, out_neg, iter_print_element, temp_mem_bank_idx = model(videos, qas, qas_lengths, vid_idx, lam_1, lam_2, index, ans, neighbours.to(dtype=torch.long, device=device))
         iter_print_element['ans_idx'] = [
             [targets_a[idx].detach().cpu().numpy().tolist(), targets_b[idx].detach().cpu().numpy().tolist()] for idx in
             temp_mem_bank_idx]
@@ -160,7 +171,7 @@ def eval(model, val_loader, device):
     prediction_list = []
     answer_list = []
     with torch.no_grad():
-        for iter, inputs in enumerate(val_loader):
+        for iter, inputs in enumerate(tqdm(val_loader)):
             input_batch = list(map(lambda x: x.to(device), inputs[:3]))
             out = model(*input_batch)
             prediction = out.max(-1)[1]  # bs,
@@ -183,7 +194,7 @@ def predict(model, test_loader, device):
     model.eval()
     results = {}
     with torch.no_grad():
-        for iter, inputs in enumerate(test_loader):
+        for iter, inputs in enumerate(tqdm(test_loader)):
             input_batch = list(map(lambda x: x.to(device), inputs[:3]))
             answers, qns_keys = inputs[-3], inputs[-2]
 
@@ -236,24 +247,32 @@ def update_prints(prints: list, train_data):
 if __name__ == "__main__":
 
     logger, sign = logger(args)
-    if args.file_prefix != '':
-        sign = args.file_prefix
+    # if args.file_prefix != '':
+    #     sign = args.file_prefix
+
+    best_model_dir = f'./models/exp{args.logs}'
+    if not os.path.isdir(best_model_dir):
+        os.makedirs(best_model_dir)
+
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f'device chosen: {device}')
+
+    logs_dir = f"./logs/exp{args.logs}"
+    writer = SummaryWriter(logs_dir)
+
     # set data path
-    feat_path = '/home/ec2-user/feats'
-    sample_list_path = '/home/ec2-user/nextqa'
+    feat_path = args.feat_path
+    sample_list_path = args.sample_list_path
 
-    train_data = VideoQADataset(sample_list_path, feat_path, 'train')
-    train_loader = DataLoader(train_data, batch_size=args.bs, shuffle=True, num_workers=args.num_workers,
-                              pin_memory=True)
+    train_data = VideoQADataset(sample_list_path, feat_path, 'train', args.bert_type, args.video_type, args.num_neighbours)
+    mem_bank_path = train_data.vid_feat_file
+    train_loader = DataLoader(train_data, batch_size=args.bs, shuffle=True, num_workers=args.num_workers, pin_memory=True)
 
-    val_data = VideoQADataset(sample_list_path, feat_path, 'val')
+    val_data = VideoQADataset(sample_list_path, feat_path, 'val', args.bert_type, args.video_type, args.num_neighbours)
     val_loader = DataLoader(val_data, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
-    test_data = VideoQADataset(sample_list_path, feat_path, 'test')
-    test_loader = DataLoader(test_data, batch_size=args.bs, shuffle=False, num_workers=args.num_workers,
-                             pin_memory=True)
+    test_data = VideoQADataset(sample_list_path, feat_path, 'test', args.bert_type, args.video_type, args.num_neighbours)
+    test_loader = DataLoader(test_data, batch_size=args.bs, shuffle=False, num_workers=args.num_workers, pin_memory=True)
 
     # model
 
@@ -267,11 +286,14 @@ if __name__ == "__main__":
         'dropout': args.drop,
         'neg': args.neg,
         'tau_gumbel': args.tau_gumbel,
-        'logger': logger
+        'mem_bank_path': mem_bank_path,
+        'device': device
     }
+
     
     model = VideoQANetwork(**model_kwargs)
     model.to(device)
+
     if args.is_eval:
         # predict with best model
         best_model_path = args.best_model_path
@@ -298,9 +320,14 @@ if __name__ == "__main__":
             best_eval_score = 0.0
             best_epoch = 1
             epoch_prints = []
-            for epoch in range(1, args.epoch + 1):
-                train_loss, train_xe_loss, train_nce_loss, train_acc, epoch_print = train(model, optimizer, train_loader, xe,
-                                                                                        cl, device, epoch=epoch)
+            for epoch in tqdm(range(1, args.epoch + 1)):
+                train_loss, train_xe_loss, train_nce_loss, train_acc, epoch_print = train(model, optimizer, train_loader, xe, cl, device, epoch=epoch)
+                
+                writer.add_scalar('Train loss (epoch)', train_loss, epoch)    
+                writer.add_scalar('Train XE loss (epoch)', train_xe_loss, epoch)    
+                writer.add_scalar('Train NCE loss (epoch)', train_nce_loss, epoch)    
+                writer.add_scalar('Train Accuracy (epoch)', train_acc, epoch)  
+
                 eval_score = eval(model, val_loader, device)
                 logger.debug(
                     "==>Epoch:[{}/{}][lr: {}][Train Loss: {:.4f} XE: {:.4f} NCE: {:.4f} Train acc: {:.2f} Val acc: {:.2f}]".
@@ -310,17 +337,30 @@ if __name__ == "__main__":
                 if eval_score > best_eval_score:
                     best_eval_score = eval_score
                     best_epoch = epoch
-                    best_model_path = './models/{}.ckpt'.format(sign)
+                    best_model_path= os.path.join(best_model_dir, f'best_model_epoch{best_epoch}_exp{args.logs}.ckpt')
                     torch.save(model.state_dict(), best_model_path)
 
+                writer.add_scalar('Val Score (epoch)', best_eval_score, best_epoch)    
+                logger.debug("Epoch {} Best Val acc{:.2f}".format(best_epoch, best_eval_score))
+
                 epoch_prints.extend(epoch_print)
+
+            logger.debug("Epoch {} Best Val acc{:.2f}".format(best_epoch, best_eval_score))
+            
+            model.load_state_dict(torch.load(best_model_path))
+            test_acc=eval(model, test_loader, device)
+            logger.debug("Test acc{:.2f} on {} epoch".format(test_acc, best_epoch))
+
+            results=predict(model, test_loader, device)
+            eval_mc.accuracy_metric(test_data.sample_list_file, results)
+            result_path= './prediction/{}-{}-{:.2f}.json'.format(sign, best_epoch, best_eval_score)
+            save_file(results, result_path)
 
             with open(f'./{sign}_{epoch}_qualitative_examples.json', 'w') as jsonf:
                 p = update_prints(epoch_prints, train_data)
                 print(p)
                 json.dump(p, jsonf)
 
-            logger.debug("Epoch {} Best Val acc{:.2f}".format(best_epoch, best_eval_score))
         except KeyboardInterrupt:
             logger.error("Keyboard interrupt, saving qualitative examples")
             with open(f'./{sign}_{epoch}_qualitative_examples.json', 'w') as jsonf:

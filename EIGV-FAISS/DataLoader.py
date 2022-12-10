@@ -23,16 +23,31 @@ class VideoQADataset(Dataset):
                 [feat]:feature (34132, 5, 37, 768)
     """
 
-    def __init__(self, sample_list_path,video_feature_path, mode, num_neighbours=3):
+    def __init__(self, sample_list_path,video_feature_path, mode, bert_type="next", video_type="ground", num_neighbours=3):
         self.mode = mode
         self.video_feature_path = video_feature_path
         self.sample_list_file = osp.join(sample_list_path, '{}.csv'.format(mode))
         self.sample_list = load_file(self.sample_list_file)
         self.max_qa_length = 37
 
-        self.bert_file = osp.join(video_feature_path, 'qas_bert/bert_ft_{}.h5'.format(mode))
+        if bert_type == "action":
+            print(bert_type)
+            self.bert_file = osp.join(video_feature_path, 'action/{}_actions.h5'.format(mode))
+        elif bert_type == "action_caption":
+            print(bert_type)
+            self.bert_file = osp.join(video_feature_path, 'action_caption/{}.h5'.format(mode))
+        elif bert_type == "caption":
+            print(bert_type)
+            self.bert_file = osp.join(video_feature_path, 'caption/{}.h5'.format(mode))
+        elif bert_type == "next":
+            print(bert_type)
+            self.bert_file = osp.join(video_feature_path, 'qas_bert/bert_ft_{}.h5'.format(mode))
+        
+        if video_type == 'next':
+            self.vid_feat_file = osp.join(video_feature_path, 'vid_feat/app_mot_{}.h5'.format(mode))
+        elif video_type == 'ground':
+            self.vid_feat_file = osp.join(video_feature_path, 'video_feats/{}_clip_32.h5'.format(mode))
 
-        vid_feat_file = osp.join(video_feature_path, 'vid_feat/app_mot_{}.h5'.format(mode))
         print('Load {}...'.format(vid_feat_file))
         self.feats = {}
         self.vid2idx = {}
@@ -60,7 +75,7 @@ class VideoQADataset(Dataset):
 
     def __getitem__(self, idx):
         cur_sample = self.sample_list.iloc[idx]
-        video_name, qns, ans, qid = str(cur_sample['video']), str(cur_sample['question']),\
+        video_name, qns, ans, qid = str(cur_sample['video_id']), str(cur_sample['question']),\
                                     int(cur_sample['answer']), str(cur_sample['qid'])
 
         # index to embedding

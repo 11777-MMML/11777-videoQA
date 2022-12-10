@@ -10,7 +10,7 @@ def accuracy_metric(sample_list_file, result_file):
     sample_list = load_file(sample_list_file)
     group = {'CW':[], 'CH':[], 'TN':[], 'TC':[], 'DC':[], 'DL':[], 'DO':[]}
     for id, row in sample_list.iterrows():
-        qns_id = str(row['video']) + '_' + str(row['qid'])
+        qns_id = str(row['video_id']) + '_' + str(row['qid'])
         qtype = str(row['type'])
         #(combine temporal qns of previous and next as 'TN')
         if qtype == 'TP': qtype = 'TN'

@@ -61,8 +61,7 @@ class MemBank(nn.Module):
     def __init__(self):
         super().__init__()
         print('init')
-        bank_path='/home/ec2-user/feats/vid_feat/app_mot_train.h5'
-        # bank_path = '/Users/swarnashree/Documents/MIIS-coursework/Sem3/11777/project/data_for_eigv/vid_feat/app_mot_train.h5'
+        bank_path=mem_bank_path
         with h5py.File(bank_path) as f:
             self.mem_bank=torch.Tensor(f['feat'][:])
 

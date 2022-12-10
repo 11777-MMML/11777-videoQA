@@ -138,6 +138,7 @@ class VideoQANetwork(nn.Module):
         self.num_neg = kwargs.pop("neg")
         self.tau_gumbel = kwargs.pop("tau_gumbel")
         self.logger = kwargs.pop('logger')
+        self.mem_bank_path = kwargs.pop("mem_bank_path")
         hidden_dim = self.module_dim
 
         vid_dim = self.app_pool5_dim * 2
@@ -151,7 +152,7 @@ class VideoQANetwork(nn.Module):
         self.fg_att = AttentionScore(hidden_size)
         self.bg_att = AttentionScore(hidden_size)
 
-        self.mem_swap = MemBank()
+        sself.mem_swap = MemBank(self.mem_bank_path)
 
         self.adj_learner = AdjLearner(
             hidden_size, hidden_size, dropout=self.dropout)
