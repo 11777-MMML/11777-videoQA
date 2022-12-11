@@ -58,7 +58,7 @@ class AttentionScore(nn.Module):
 
 
 class MemBank(nn.Module):
-    def __init__(self):
+    def __init__(self, mem_bank_path):
         super().__init__()
         print('init')
         bank_path=mem_bank_path
