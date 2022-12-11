@@ -81,6 +81,7 @@ def get_next_epoch_nb_idxs(model, train_loader, num_neighbours=3):
 
     for iter, inputs in enumerate(tqdm(loader)):
         vid_names, vid_idxs, vid_features = inputs
+        vid_features = vid_features.detach().cpu()
         vid_features = torch.tensor(vid_features).to(device)
         vid_features = vid_encoder(vid_features, extract_vid_feats=True).detach().cpu().numpy()
         new_features[vid_idxs] = vid_features
@@ -287,7 +288,8 @@ if __name__ == "__main__":
         'neg': args.neg,
         'tau_gumbel': args.tau_gumbel,
         'mem_bank_path': mem_bank_path,
-        'device': device
+        'device': device,
+        'logger':logger,
     }
 
     
