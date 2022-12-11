@@ -48,7 +48,7 @@ class VideoQADataset(Dataset):
         elif video_type == 'ground':
             self.vid_feat_file = osp.join(video_feature_path, 'video_feats/{}_clip_32.h5'.format(mode))
 
-        print('Load {}...'.format(vid_feat_file))
+        print('Load {}...'.format(self.vid_feat_file))
         self.feats = {}
         self.vid2idx = {}
         self.idx2vid = {}
@@ -56,7 +56,7 @@ class VideoQADataset(Dataset):
         self.hf_feats = {'video_name': [], 'embedding': []}
         self.num_neighbours = num_neighbours+1
 
-        with h5py.File(vid_feat_file, 'r') as fp:
+        with h5py.File(self.vid_feat_file, 'r') as fp:
             vids = fp['ids']
             feats = fp['feat']
             for id, (vid, feat) in enumerate(zip(vids, feats)):
@@ -64,7 +64,7 @@ class VideoQADataset(Dataset):
                 self.vid2idx[str(vid)] = id
                 self.idx2vid[id] = str(vid)
                 self.hf_feats['video_name'].append(str(vid))
-                self.hf_feats['embedding'].append(np.mean(feat, axis=0))
+                self.hf_feats['embedding'].append(np.mean(feat, axis=0).astype(np.float32))
 
         self.hf_feats = datasets.Dataset.from_dict(self.hf_feats)
         self.hf_feats.add_faiss_index(column='embedding')
@@ -91,7 +91,7 @@ class VideoQADataset(Dataset):
         vid_idx=self.vid2idx[video_name]
 
         # get FAISS based neighbours
-        scores, neighbours = self.hf_feats.get_nearest_examples('embedding', np.mean(self.feats[video_name], axis=0), k=self.num_neighbours)
+        scores, neighbours = self.hf_feats.get_nearest_examples('embedding', np.mean(self.feats[video_name], axis=0).astype(np.float32), k=self.num_neighbours)
         # exclude 1st neighbour since it is the given video itself
         
         nb_idxs = np.array([self.vid2idx[item] for item in neighbours['video_name']][1:])
