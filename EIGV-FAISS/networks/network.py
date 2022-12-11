@@ -152,7 +152,7 @@ class VideoQANetwork(nn.Module):
         self.fg_att = AttentionScore(hidden_size)
         self.bg_att = AttentionScore(hidden_size)
 
-        sself.mem_swap = MemBank(self.mem_bank_path)
+        self.mem_swap = MemBank(self.mem_bank_path)
 
         self.adj_learner = AdjLearner(
             hidden_size, hidden_size, dropout=self.dropout)
